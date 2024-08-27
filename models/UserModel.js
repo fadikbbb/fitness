@@ -51,11 +51,9 @@ const UserSchema = new mongoose.Schema({
     enum: ["free", "premium"],
     default: "free",
   },
-  subscriptionStartDate: {
-    type: Date,
-  },
-  subscriptionEndDate: {
-    type: Date,
+  isPremium: {
+    type: Boolean,
+    default: false,
   },
   isActive: {
     type: Boolean,

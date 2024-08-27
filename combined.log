@@ -1,0 +1,15 @@
+{"level":"info","message":"::1 - - [27/Aug/2024:13:46:37 +0000] \"POST /api/v1/auth/register HTTP/1.1\" 400 266 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T13:46:37.833Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:13:46:55 +0000] \"POST /api/v1/auth/register HTTP/1.1\" 201 520 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T13:46:55.231Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:13:47:23 +0000] \"POST /api/v1/auth/login HTTP/1.1\" 200 50 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T13:47:23.510Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:13:47:47 +0000] \"POST /api/v1/auth/verify-login-code HTTP/1.1\" 200 194 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T13:47:47.798Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:13:54:10 +0000] \"GET //api/v1/foods HTTP/1.1\" 404 152 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T13:54:10.293Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:13:54:18 +0000] \"GET /api/v1/foods HTTP/1.1\" 200 58 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T13:54:18.722Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:13:55:52 +0000] \"POST /api/v1/foods HTTP/1.1\" 201 284 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T13:55:52.587Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:13:56:20 +0000] \"GET /api/v1/foods HTTP/1.1\" 200 282 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T13:56:20.226Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:13:56:37 +0000] \"GET /api/v1/foods/66cddae8af1ee63838bf6aa4 HTTP/1.1\" 401 29 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T13:56:37.054Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:13:56:44 +0000] \"GET /api/v1/foods/66cddae8af1ee63838bf6aa4 HTTP/1.1\" 200 44 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T13:56:44.259Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:13:57:17 +0000] \"DELETE /api/v1/foods/66cddae8af1ee63838bf6aa4 HTTP/1.1\" 200 44 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T13:57:17.490Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:13:59:04 +0000] \"DELETE /api/v1/foods/66cddae8af1ee63838bf6aa4 HTTP/1.1\" 404 31 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T13:59:04.715Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:14:00:04 +0000] \"GET /api/v1/exercises HTTP/1.1\" 200 61 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T14:00:04.920Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:14:01:54 +0000] \"POST /api/v1/exercises HTTP/1.1\" 201 309 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T14:01:54.307Z"}
+{"level":"info","message":"::1 - - [27/Aug/2024:14:02:28 +0000] \"GET /api/v1/exercises HTTP/1.1\" 200 307 \"-\" \"PostmanRuntime/7.41.2\"","timestamp":"2024-08-27T14:02:28.777Z"}

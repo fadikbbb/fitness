@@ -1,8 +1,9 @@
 const query = (model) => {
   return async (req, res, next) => {
     try {
+      // Extract and prepare filter from query parameters
       let filter = { ...req.query };
-      const excludeFields = ["page", "sort", "limit", "fields"];
+      const excludeFields = ['page', 'sort', 'limit', 'fields'];
       excludeFields.forEach((field) => delete filter[field]);
 
       // Convert query operators to MongoDB operators
@@ -12,32 +13,33 @@ const query = (model) => {
       );
       filter = JSON.parse(queryStr);
 
-      let query = model.find(filter); // Use the dynamic model here
+      // Build the query
+      let query = model.find(filter);
 
-      // Sort users if specified
+      // Apply sorting if specified
       if (req.query.sort) {
-        const sortBy = req.query.sort.split(",").join(" ");
+        const sortBy = req.query.sort.split(',').join(' ');
         query = query.sort(sortBy);
       } else {
-        query = query.sort("-createdAt");
+        query = query.sort('-createdAt'); // Default sort
       }
 
-      // Select specific fields if specified
+      // Apply field selection if specified
       if (req.query.fields) {
-        const fields = req.query.fields.split(",").join(" ");
+        const fields = req.query.fields.split(',').join(' ');
         query = query.select(fields);
       } else {
-        query = query.select("-__v"); // Exclude version key
+        query = query.select('-__v'); // Default field exclusion
       }
 
-      // Pagination
+      // Apply pagination
       const page = parseInt(req.query.page, 10) || 1;
       const limit = parseInt(req.query.limit, 10) || 5;
       const skip = (page - 1) * limit;
 
       query = query.skip(skip).limit(limit);
 
-      // Execute the query and set the results in `res.queryResults`
+      // Execute the query and attach results to `res.queryResults`
       res.queryResults = await query;
 
       next();

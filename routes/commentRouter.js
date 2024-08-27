@@ -2,7 +2,7 @@ const express = require("express");
 const commentController = require("../controllers/commentController");
 const authenticate = require("../middleware/authenticate");
 const Comment = require("../models/CommentModel");
-const {query} = require("../middleware/query");
+const { query } = require("../middleware/query");
 const router = express.Router();
 
 // Apply authentication middleware
