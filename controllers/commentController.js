@@ -1,6 +1,4 @@
 const Comment = require("../models/CommentModel");
-const User = require("../models/UserModel");
-
 // Create Comment
 exports.createComment = async (req, res) => {
   try {
@@ -28,13 +26,10 @@ exports.createComment = async (req, res) => {
 // Get All Comments
 exports.getAllComments = async (req, res) => {
   try {
-    const comments = await Comment.find().populate(
-      "user",
-      "firstName lastName"
-    ); // Populate user details
-    res
-      .status(200)
-      .json({ status: "200", result: comments.length, data: comments });
+    res.status(200).json({
+      success: true,
+      data: res.queryResults,
+    });
   } catch (error) {
     res
       .status(500)
@@ -88,8 +83,7 @@ exports.deleteComment = async (req, res) => {
         .status(403)
         .json({ error: "Not authorized to delete this comment" });
     }
-
-    await comment.remove();
+    await Comment.findByIdAndDelete(commentId);
     res.status(200).json({ message: "Comment deleted successfully" });
   } catch (error) {
     res
