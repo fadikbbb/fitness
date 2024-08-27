@@ -1,6 +1,7 @@
 const User = require("../models/UserModel");
 const jwt = require("jsonwebtoken");
 const { hashPassword, comparePassword } = require("../utils/passwordUtils");
+
 // Import utility functions
 const {
   generateTokens,

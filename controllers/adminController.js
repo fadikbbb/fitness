@@ -48,6 +48,7 @@ exports.createUser = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     let filter = { ...req.query };
+    console.log(filter);
     const excludeFields = ["page", "sort", "limit", "fields"];
     excludeFields.forEach((field) => delete filter[field]);
 
