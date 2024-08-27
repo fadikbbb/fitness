@@ -4,6 +4,8 @@ const authenticate = require("../middleware/authenticate");
 const authorize = require("../middleware/authorize");
 const validateUser = require("../middleware/validateUser");
 const { param } = require("express-validator");
+const { query } = require("../middleware/query");
+const User = require("../models/UserModel");
 const router = express.Router();
 
 // Apply authentication middleware to all routes
@@ -16,7 +18,7 @@ const validateUserId = [
 
 // User management routes with authorization, validation, and ID check
 router.post("/", authorize("admin"), validateUser, adminRouter.createUser);
-router.get("/", authorize("admin"), adminRouter.getAllUsers);
+router.get("/", authorize("admin"), query(User), adminRouter.getAllUsers);
 router.get("/:id", authorize("admin"), validateUserId, adminRouter.getUserById);
 router.put(
   "/:id",
