@@ -216,7 +216,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"email\": \"fadi@example.com\",\r\n  \"password\": \"Password123!\"\r\n}\r\n",
+							"raw": "{\r\n  \"email\": \"hadikabbani76917223@gmail.com\",\r\n  \"password\": \"Hadi76917223!\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -294,7 +294,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"fadi@example.com\",\r\n    \"password\": \"Password123!\",\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Doe\",\r\n    \"gender\": \"male\",\r\n    \"weight\": 70,\r\n    \"height\": 175,\r\n    \"dateOfBirth\": \"2004-01-01\",\r\n    \"profileImage\": \"path/to/image.jpg\",\r\n    \"subscriptionStatus\": \"free\",\r\n    \"role\":\"admin\"\r\n}",
+							"raw": "{\r\n    \"email\": \"hadikabbani76917223@gmail.com\",\r\n    \"password\": \"Hadi76917223!\",\r\n    \"firstName\": \"hadi\",\r\n    \"lastName\": \"kabbani\",\r\n    \"gender\": \"male\",\r\n    \"weight\": 109,\r\n    \"height\": 180,\r\n    \"dateOfBirth\": \"2002-04-01\",\r\n    \"profileImage\": \"path/to/image.jpg\",\r\n    \"subscriptionStatus\": \"free\",\r\n    \"role\":\"admin\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -845,6 +845,35 @@
 							"path": [
 								"v1",
 								"exercises"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get exercise by id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}api/v1/exercises/66cddc52c7932400a073d154",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"exercises",
+								"66cddc52c7932400a073d154"
 							]
 						}
 					},
