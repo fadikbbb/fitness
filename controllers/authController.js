@@ -59,7 +59,7 @@ exports.createUser = async (req, res) => {
     });
     await user.save();
 
-    res.status(201).json({ message: "User created successfully", user });
+    res.status(201).json({ message: "success", user });
   } catch (error) {
     res
       .status(500)
@@ -100,7 +100,7 @@ exports.login = async (req, res) => {
 
     // Inform user that a verification code has been sent
     res.status(200).json({
-      message: "Verification code sent to your email",
+      message: "success",
     });
   } catch (error) {
     res.status(500).json({ error: "Error logging in", details: error.message });
@@ -133,6 +133,8 @@ exports.verifyLoginCode = async (req, res) => {
 
     // Retrieve the stored verification code
     const storedCodeData = verificationCodes.get(email);
+    console.log("Stored code data: ", storedCodeData);
+
     if (!storedCodeData) {
       return res.status(401).json({ error: "Verification code not found" });
     }
@@ -159,7 +161,7 @@ exports.verifyLoginCode = async (req, res) => {
     });
 
     // Send access token in response
-    res.json({ accessToken: accessToken });
+    res.status(200).json({ message: "success", token: accessToken });
   } catch (error) {
     console.error("Verification error:", error.message);
     res
@@ -198,7 +200,7 @@ exports.resendCode = async (req, res) => {
     // Send the verification code to the user's email
     await sendVerificationCodeEmail(email, verificationCode);
 
-    res.status(200).json({ message: "Verification code sent to your email" });
+    res.status(200).json({ message: "success" });
   } catch (error) {
     res.status(500).json({
       error: "Error resending verification code",
@@ -234,41 +236,47 @@ exports.refreshToken = (req, res) => {
 
 // User Logout
 exports.logout = async (req, res) => {
-  // Clear the refresh token in HttpOnly cookie
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "Strict",
-  });
+  try {
+    // Clear the refresh token in HttpOnly cookie
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true, // Ensure secure is set to true in production
+      sameSite: "Strict", // Helps prevent CSRF attacks
+    });
 
-  // Clear the access token in the Authorization header
-  res.header("Authorization", "");
+    // Clear the access token in the Authorization header
+    res.set("Authorization", "");
 
-  // Change User status to not active
-  const user = req.user;
-  user.isActive = false;
-  await user.save();
+    // Change user status to inactive
+    const user = req.user; // Assuming middleware has added user to req
+    user.isActive = false;
+    await user.save();
 
-  // Send a success message
-  res.status(200).json({ message: "Logged out successfully" });
+    // Send a success message
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Logout failed", details: error.message });
+  }
 };
 
 // Request Password Reset
 exports.requestPasswordReset = async (req, res) => {
   try {
     const { email } = req.body;
-    const user = await User.findOne({ email });
 
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const resetToken = generatePasswordResetToken(user._id);
-    await sendPasswordResetEmail(user.email, resetToken);
-    user.passwordResetExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    const resetToken = generatePasswordResetToken(user._id); // Token generator function
+    user.passwordResetToken = resetToken; // Store token in DB for validation later
+    user.passwordResetExpires = Date.now() + 24 * 60 * 60 * 1000; // Token valid for 24 hours
     await user.save();
-    // Send password reset email
-    res.status(200).json({ message: "Password reset email sent" });
+
+    await sendPasswordResetEmail(user.email, resetToken); // Function to send reset email
+
+    res.status(200).json({ message: "success" });
   } catch (error) {
     res.status(500).json({
       error: "Error requesting password reset",
@@ -280,18 +288,23 @@ exports.requestPasswordReset = async (req, res) => {
 // Reset Password
 exports.resetPassword = async (req, res) => {
   try {
-    const { newPassword } = req.body; // Only expect newPassword from body
-    const { token: resetToken } = req.params; // Extract resetToken from URL parameters
+    const { newPassword, confirmPassword } = req.body;
+    const { token: resetToken } = req.params;
 
     // Validate input
-    if (!resetToken || !newPassword) {
-      return res
-        .status(400)
-        .json({ error: "Reset token and new password are required" });
+    if (!resetToken || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        error: "Reset token, new password, and confirm password are required",
+      });
+    }
+
+    // Check if newPassword and confirmPassword match
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ error: "Passwords do not match" });
     }
 
     // Verify the reset token
-    const decoded = jwt.verify(resetToken, process.env.RESET_TOKEN_SECRET);
+    const decoded = jwt.verify(resetToken, process.env.RESET_TOKEN_SECRET); // Adjust your token verification method
     const userId = decoded.userId;
 
     const user = await User.findById(userId);
@@ -306,10 +319,10 @@ exports.resetPassword = async (req, res) => {
     // Hash the new password
     const hashedPassword = await hashPassword(newPassword);
 
-    // Update user password
-
+    // Update user password and reset fields
     user.passwordHash = hashedPassword;
-    user.updatedAt = Date.now();
+    user.passwordResetToken = undefined; // Clear reset token after use
+    user.passwordResetExpires = undefined; // Clear expiration after use
     user.passwordChangedAt = Date.now();
     await user.save();
 
