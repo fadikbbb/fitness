@@ -70,7 +70,7 @@ exports.createUser = async (req, res) => {
 // Send verification code to user's email
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
 
     // Validate input
     if (!email || !password) {
@@ -110,7 +110,7 @@ exports.login = async (req, res) => {
 // Verify login code
 exports.verifyLoginCode = async (req, res) => {
   try {
-    const { email, code, password } = req.body;
+    let { email, code, password } = req.body;
 
     // Validate input
     if (!email || !code || !password) {
@@ -126,19 +126,19 @@ exports.verifyLoginCode = async (req, res) => {
     }
 
     // Compare the provided password with the stored hashed password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = comparePassword(password, user.passwordHash);
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid password" });
     }
 
     // Retrieve the stored verification code
     const storedCodeData = verificationCodes.get(email);
+    if (!storedCodeData) {
+      return res.status(401).json({ error: "Verification code not found" });
+    }
+
     // Check if the code is correct and not expired
-    if (
-      !storedCodeData ||
-      storedCodeData.code !== code ||
-      storedCodeData.expiresAt < Date.now()
-    ) {
+    if (storedCodeData.code !== code || storedCodeData.expiresAt < Date.now()) {
       return res
         .status(401)
         .json({ error: "Invalid or expired verification code" });
@@ -161,6 +161,7 @@ exports.verifyLoginCode = async (req, res) => {
     // Send access token in response
     res.json({ accessToken: accessToken });
   } catch (error) {
+    console.error("Verification error:", error.message);
     res
       .status(500)
       .json({ error: "Error verifying code", details: error.message });
@@ -171,7 +172,6 @@ exports.verifyLoginCode = async (req, res) => {
 exports.resendCode = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     // Validate input
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
