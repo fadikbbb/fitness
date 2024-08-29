@@ -99,27 +99,40 @@ exports.login = async (req, res) => {
     await sendVerificationCodeEmail(email, verificationCode);
 
     // Inform user that a verification code has been sent
-    res.status(200).json({ message: "Verification code sent to your email" });
+    res.status(200).json({
+      message: "Verification code sent to your email",
+    });
   } catch (error) {
     res.status(500).json({ error: "Error logging in", details: error.message });
   }
 };
 
-// Verify the code and complete login
+// Verify login code
 exports.verifyLoginCode = async (req, res) => {
   try {
-    const { email, code } = req.body;
+    const { email, code, password } = req.body;
 
     // Validate input
-    if (!email || !code) {
+    if (!email || !code || !password) {
       return res
         .status(400)
-        .json({ error: "Email and verification code are required" });
+        .json({ error: "Email, verification code, and password are required" });
+    }
+
+    // Retrieve the user and verify the password
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Compare the provided password with the stored hashed password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: "Invalid password" });
     }
 
     // Retrieve the stored verification code
     const storedCodeData = verificationCodes.get(email);
-
     // Check if the code is correct and not expired
     if (
       !storedCodeData ||
@@ -135,7 +148,6 @@ exports.verifyLoginCode = async (req, res) => {
     verificationCodes.delete(email);
 
     // Generate tokens
-    const user = await User.findOne({ email });
     const { accessToken, refreshToken } = generateTokens(user._id);
 
     // Store refresh token in HttpOnly cookie
@@ -152,6 +164,46 @@ exports.verifyLoginCode = async (req, res) => {
     res
       .status(500)
       .json({ error: "Error verifying code", details: error.message });
+  }
+};
+
+// Resend verification code endpoint
+exports.resendCode = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    // Check if user exists and password matches
+    if (!user || !(await comparePassword(password, user.passwordHash))) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    // Generate a new verification code
+    const verificationCode = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    // Store the new verification code with expiration time
+    verificationCodes.set(email, {
+      code: verificationCode,
+      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes from now
+    });
+
+    // Send the verification code to the user's email
+    await sendVerificationCodeEmail(email, verificationCode);
+
+    res.status(200).json({ message: "Verification code sent to your email" });
+  } catch (error) {
+    res.status(500).json({
+      error: "Error resending verification code",
+      details: error.message,
+    });
   }
 };
 

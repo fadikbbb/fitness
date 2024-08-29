@@ -26,6 +26,9 @@ router.post("/password-reset/reset/:token", authController.resetPassword);
 // Refresh Token
 router.post("/refresh-token", authController.refreshToken);
 
+// resend Verification Code
+router.post("/resend-code", authController.resendCode);
+
 // Update Password
 router.put(
   "/update-password",
@@ -33,7 +36,5 @@ router.put(
   validatePasswordUpdate,
   authController.updatePassword
 );
-
-
 
 module.exports = router;
