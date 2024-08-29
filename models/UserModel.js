@@ -24,19 +24,19 @@ const UserSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
-    required: true,
+    required: false,
   },
   weight: {
     type: Number,
-    required: true,
+    required: false,
   },
   height: {
     type: Number,
-    required: true,
+    required: false,
   },
   dateOfBirth: {
     type: Date,
-    required: true,
+    required: false,
   },
   role: {
     type: String,

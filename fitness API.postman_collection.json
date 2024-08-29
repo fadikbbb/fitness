@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "661ff0e5-222d-48ab-845f-c93ffe83c0de",
+		"_postman_id": "8682d4c6-1a99-4c82-b6c4-6a7b4807df00",
 		"name": "fitness API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "33220176"
+		"_exporter_id": "37429875"
 	},
 	"item": [
 		{
@@ -403,7 +403,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									""
+									"pm.environment.set(\"JWT\", pm.response.json().accessToken);"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -413,7 +413,7 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"pm.environment.set(\"JWT\", pm.response.json().accessToken);"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -702,7 +702,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Oatmeal\",\r\n  \"category\": \"Grain\",\r\n  \"calories\": 150,\r\n  \"protein\": 5,\r\n  \"carbohydrates\": 27,\r\n  \"fat\": 3,\r\n  \"servingSize\": \"1 cup\",\r\n  \"createdAt\": \"2024-08-01T00:00:00Z\",\r\n  \"updatedAt\": \"2024-08-01T00:00:00Z\"\r\n}\r\n",
+							"raw": "{\r\n  \"name\": \"apple\",\r\n  \"category\": \"Fruit\",\r\n  \"calories\": 150,\r\n  \"protein\": 5,\r\n  \"carbohydrates\": 27,\r\n  \"fat\": 3,\r\n  \"servingSize\": \"200g\",\r\n  \"createdAt\": \"2024-08-01T00:00:00Z\",\r\n  \"updatedAt\": \"2024-08-01T00:00:00Z\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -779,12 +779,88 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "update food ",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Orange\",\r\n    \"category\": \"Fruit\",\r\n    \"calories\": 150,\r\n    \"protein\": 5,\r\n    \"carbohydrates\": 27,\r\n    \"fat\": 3,\r\n    \"servingSize\": \"200g\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}api/v1/foods/66cdf8f8b49fad0a26dc9507",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"foods",
+								"66cdf8f8b49fad0a26dc9507"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
 		{
 			"name": "exercise router",
 			"item": [
+				{
+					"name": "update exercise",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Push-up\",\r\n    \"description\": \"A basic upper body exercise.\",\r\n    \"type\": \"strength\",\r\n    \"duration\": 10,\r\n    \"intensity\": \"medium\",\r\n    \"sets\": 2,\r\n    \"reps\": 10\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}api/v1/exercises/66cdfae1b49fad0a26dc952b",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"exercises",
+								"66cdfae1b49fad0a26dc952b"
+							]
+						}
+					},
+					"response": []
+				},
 				{
 					"name": "get all exercises",
 					"request": {
@@ -808,6 +884,35 @@
 							"path": [
 								"v1",
 								"exercises"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete exercise",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}api/v1/exercises/66cdf731f32d45a903b91fdb",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"exercises",
+								"66cdf731f32d45a903b91fdb"
 							]
 						}
 					},
@@ -845,6 +950,598 @@
 							"path": [
 								"v1",
 								"exercises"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get exercise by id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}api/v1/exercises",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"exercises"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "meal router",
+			"item": [
+				{
+					"name": "get all meals",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}api/v1/meals",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"meals"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create meal",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"mealId\": \"64d7d24e0d2c9b5f10012347\",\r\n  \"mealType\": \"Breakfast\",\r\n  \"foods\": [\"66cdf8f8b49fad0a26dc9507\", \"66cdf8d5b49fad0a26dc9504\"]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}api/v1/meals",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"meals"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get meal by id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}api/v1/meals/66cdf91fb49fad0a26dc950d",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"meals",
+								"66cdf91fb49fad0a26dc950d"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete  meal",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}api/v1/meals/66cdf91fb49fad0a26dc950d",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"meals",
+								"66cdf91fb49fad0a26dc950d"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update meal",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"mealId\": \"64d7d24e0d2c9b5f10012347\",\r\n  \"mealType\": \"Breakfast\",\r\n  \"foods\": [\"66cdf8f8b49fad0a26dc9507\"]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}api/v1/meals/66cdf9c9b49fad0a26dc9520",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"meals",
+								"66cdf9c9b49fad0a26dc9520"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "workout router",
+			"item": [
+				{
+					"name": "get all workouts",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": \"66ccb293713018c9077af93b\",\r\n  \"days\": [\r\n    {\r\n      \"day\": \"Monday\",\r\n      \"exercises\": [\"66cdfae1b49fad0a26dc952b\"]\r\n    }\r\n  ],\r\n  \"totalCaloriesBurned\": 500,\r\n  \"startDate\": \"2024-08-01\",\r\n  \"endDate\": \"2024-08-31\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}api/v1/workout-plans",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"workout-plans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get all user workouts",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}api/v1/workout-plans?userId=66ccb293713018c9077af93b",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"workout-plans"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "66ccb293713018c9077af93b"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete a work out for a user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}api/v1/workout-plans/66cdfd08b49fad0a26dc9547",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"workout-plans",
+								"66cdfd08b49fad0a26dc9547"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update the workout for user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": \"66ccb293713018c9077af93b\",\r\n  \"days\": [\r\n    {\r\n      \"day\": \"Sunday\",\r\n      \"exercises\": [\"66cdfae1b49fad0a26dc952b\"]\r\n    }\r\n  ],\r\n  \"totalCaloriesBurned\": 500,\r\n  \"startDate\": \"2024-08-01\",\r\n  \"endDate\": \"2024-08-31\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}api/v1/workout-plans/66cdff88e2b2438dafaac42e",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"workout-plans",
+								"66cdff88e2b2438dafaac42e"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "subscriptions router",
+			"item": [
+				{
+					"name": "get the subscriptions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}api/v1/subscriptions/64d7d24e0d2c9b5f1001234d",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"subscriptions",
+								"64d7d24e0d2c9b5f1001234d"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get all subscriptions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}api/v1/subscriptions",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"subscriptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update the subscribtion",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"plan\": \"yearly\",\r\n  \"status\": \"active\",\r\n  \"endDate\": \"2025-08-01\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}api/v1/subscriptions/64d7d24e0d2c9b5f1001234d",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"subscriptions",
+								"64d7d24e0d2c9b5f1001234d"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create subscription",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"userId\": \"66ccb293713018c9077af93b\", \r\n  \"plan\": \"monthly\",\r\n  \"status\": \"active\",\r\n  \"startDate\": \"2024-08-01\",\r\n  \"endDate\": \"2024-09-01\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}api/v1/subscriptions",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"subscriptions"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "nutrition plan router",
+			"item": [
+				{
+					"name": "get all nutritions plan",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}api/v1/nutrition-plans",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"nutrition-plans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create nutrition plan",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nutritionPlanId\": \"64d7d24e0d2c9b5f10012346\",\r\n  \"userId\": \"66ccb293713018c9077af93b\",\r\n  \"meals\": [\"66cdf9c9b49fad0a26dc9520\",\"66cdf9c9b49fad0a26dc9520\"],\r\n  \"totalCalories\": 2000,\r\n  \"startDate\": \"2024-08-01\",\r\n  \"endDate\": \"2024-08-31\",\r\n  \"createdAt\": \"2024-08-01T00:00:00Z\",\r\n  \"updatedAt\": \"2024-08-01T00:00:00Z\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}api/v1/nutrition-plans",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"nutrition-plans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get meal by id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{JWT}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}api/v1/nutrition-plans/id",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"nutrition-plans",
+								"id"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete nutrition plan",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}api/v1/nutrition-plans/id",
+							"host": [
+								"{{URL}}api"
+							],
+							"path": [
+								"v1",
+								"nutrition-plans",
+								"id"
 							]
 						}
 					},

@@ -28,8 +28,8 @@ exports.createNutritionPlan = async (req, res) => {
     }
 };
 
-// Get all nutrition plans
 
+// Get all nutrition plans
 exports.getNutritionPlans = async (req, res) => {
     try {
         res.status(200).json({ message: 'Nutrition plans retrieved successfully', nutritionPlans: res.queryResults });
@@ -39,7 +39,6 @@ exports.getNutritionPlans = async (req, res) => {
 };
 
 // Get a single nutrition plan
-
 exports.getNutritionPlanById = async (req, res) => {
     try {
         const nutritionPlan = await NutritionPlan.findById(req.params.id).populate('meals');
@@ -53,11 +52,10 @@ exports.getNutritionPlanById = async (req, res) => {
 };
 
 // Update a nutrition plan
-
 exports.updateNutritionPlan = async (req, res) => {
     try {
+        
         const { meals, totalCalories, startDate, endDate } = req.body;
-
         if (meals.length > 0) {
             const validMeals = await Meal.find({ _id: { $in: meals } });
             if (validMeals.length !== meals.length) {
