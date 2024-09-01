@@ -19,7 +19,8 @@ const validateUserId = [
 // User management routes with authorization, validation, and ID check
 router.post("/", authorize("admin"), validateUser, adminRouter.createUser);
 router.get("/", authorize("admin"), query(User), adminRouter.getAllUsers);
-router.get("/:id", authorize("regular","admin"), validateUserId, adminRouter.getUserById);
+router.get("/:id", authorize("admin", "regular"), validateUserId, adminRouter.getUserById);
+
 router.put(
   "/:id",
   authorize("admin"),

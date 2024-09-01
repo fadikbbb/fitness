@@ -17,6 +17,12 @@ const {
 // In-memory storage for verification codes (You may choose to use a database for persistence)
 const verificationCodes = new Map();
 
+// Generate a 6-digit random verification code
+const generateVerificationCode = () => {
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  return code;
+};
+
 // User Registration
 exports.createUser = async (req, res) => {
   try {
@@ -85,9 +91,7 @@ exports.login = async (req, res) => {
     }
 
     // Generate a 6-digit random verification code
-    const verificationCode = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
+    const verificationCode = generateVerificationCode();
 
     // Store the verification code with expiration time (5 minutes)
     verificationCodes.set(email, {
@@ -122,13 +126,13 @@ exports.verifyLoginCode = async (req, res) => {
     // Retrieve the user and verify the password
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Invalid email or password" });
     }
 
     // Compare the provided password with the stored hashed password
     const isPasswordValid = comparePassword(password, user.passwordHash);
     if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid password" });
+      return res.status(401).json({ error: "Check your password" });
     }
 
     // Retrieve the stored verification code
