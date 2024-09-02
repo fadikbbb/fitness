@@ -9,10 +9,10 @@ const authenticate = require("../middleware/authenticate");
 router.post("/register", validateUser, authController.createUser);
 
 // User Login
-router.post("/login", authController.login);
+router.post("/send-verification-code", authController.sendVerificationCode);
 
 // Verify Login Code
-router.post("/verify-login-code", authController.verifyLoginCode);
+router.post("/login", authController.login);
 
 // User Logout
 router.post("/logout", authController.logout);
@@ -25,9 +25,6 @@ router.post("/password-reset/reset/:token", authController.resetPassword);
 
 // Refresh Token
 router.post("/refresh-token", authController.refreshToken);
-
-// resend Verification Code
-router.post("/resend-code", authController.resendCode);
 
 // Update Password
 router.put(
