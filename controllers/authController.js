@@ -204,7 +204,7 @@ exports.resendCode = async (req, res) => {
     // Send the verification code to the user's email
     await sendVerificationCodeEmail(email, verificationCode);
 
-    res.status(200).json({ message: "success" });
+    res.status(200).json({ message: "verification code sent" });
   } catch (error) {
     res.status(500).json({
       error: "Error resending verification code",
