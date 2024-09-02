@@ -179,48 +179,6 @@ exports.login = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-// Resend verification code endpoint
-exports.resendCode = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
-    }
-
-    const user = await User.findOne({ email });
-
-    // Check if user exists and password matches
-    if (!user || !(await comparePassword(password, user.passwordHash))) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-
-    // Generate a new verification code
-    const verificationCode = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
-
-    // Store the new verification code with expiration time
-    verificationCodes.set(email, {
-      code: verificationCode,
-      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes from now
-    });
-
-    // Send the verification code to the user's email
-    await sendVerificationCodeEmail(email, verificationCode);
-
-    res.status(200).json({ message: "verification code sent" });
-  } catch (error) {
-    res.status(500).json({
-      error: "Error resending verification code",
-      details: error.message,
-    });
-  }
-};
-
-=======
->>>>>>> 5765856aea40d6ee34aa951ef098feb79fff1017
 // Refresh Token
 exports.refreshToken = (req, res) => {
   try {
