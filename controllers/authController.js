@@ -17,12 +17,6 @@ const {
 // In-memory storage for verification codes (You may choose to use a database for persistence)
 const verificationCodes = new Map();
 
-// Generate a 6-digit random verification code
-const generateVerificationCode = () => {
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  return code;
-};
-
 // User Registration
 exports.createUser = async (req, res) => {
   try {
@@ -39,13 +33,31 @@ exports.createUser = async (req, res) => {
       profileImage,
       subscriptionStatus,
     } = req.body;
+    let code = req.body.code;
 
+    console.log(req.body);
     // Check if email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: "Email already exists" });
     }
 
+    // Retrieve the stored verification code
+    const storedCodeData = verificationCodes.get(email);
+
+    if (!storedCodeData) {
+      return res.status(401).json({ error: "Verification code not found" });
+    }
+
+    // Check if the code is correct and not expired
+    if (storedCodeData.code !== code || storedCodeData.expiresAt < Date.now()) {
+      return res
+        .status(401)
+        .json({ error: "Invalid or expired verification code" });
+    }
+
+    // Clear the stored verification code
+    verificationCodes.delete(email);
     // Hash password
     const hashedPassword = await hashPassword(password);
 
@@ -73,27 +85,21 @@ exports.createUser = async (req, res) => {
   }
 };
 
-// Send verification code to user's email
-exports.login = async (req, res) => {
+// send verification code endpoint
+exports.sendVerificationCode = async (req, res) => {
   try {
-    let { email, password } = req.body;
-
+    const { email, password } = req.body;
     // Validate input
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email });
+    // Generate a new verification code
+    const verificationCode = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
 
-    // Check if user exists and password matches
-    if (!user || !(await comparePassword(password, user.passwordHash))) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-
-    // Generate a 6-digit random verification code
-    const verificationCode = generateVerificationCode();
-
-    // Store the verification code with expiration time (5 minutes)
+    // Store the new verification code with expiration time
     verificationCodes.set(email, {
       code: verificationCode,
       expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes from now
@@ -102,17 +108,17 @@ exports.login = async (req, res) => {
     // Send the verification code to the user's email
     await sendVerificationCodeEmail(email, verificationCode);
 
-    // Inform user that a verification code has been sent
-    res.status(200).json({
-      message: "success",
-    });
+    res.status(200).json({ message: "success" });
   } catch (error) {
-    res.status(500).json({ error: "Error logging in", details: error.message });
+    res.status(500).json({
+      error: "Error resending verification code",
+      details: error.message,
+    });
   }
 };
 
-// Verify login code
-exports.verifyLoginCode = async (req, res) => {
+//  login
+exports.login = async (req, res) => {
   try {
     let { email, code, password } = req.body;
 
@@ -137,8 +143,7 @@ exports.verifyLoginCode = async (req, res) => {
 
     // Retrieve the stored verification code
     const storedCodeData = verificationCodes.get(email);
-    console.log("Stored code data: ", storedCodeData);
-
+    console.log(storedCodeData);
     if (!storedCodeData) {
       return res.status(401).json({ error: "Verification code not found" });
     }
@@ -171,45 +176,6 @@ exports.verifyLoginCode = async (req, res) => {
     res
       .status(500)
       .json({ error: "Error verifying code", details: error.message });
-  }
-};
-
-// Resend verification code endpoint
-exports.resendCode = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
-    }
-
-    const user = await User.findOne({ email });
-
-    // Check if user exists and password matches
-    if (!user || !(await comparePassword(password, user.passwordHash))) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-
-    // Generate a new verification code
-    const verificationCode = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
-
-    // Store the new verification code with expiration time
-    verificationCodes.set(email, {
-      code: verificationCode,
-      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes from now
-    });
-
-    // Send the verification code to the user's email
-    await sendVerificationCodeEmail(email, verificationCode);
-
-    res.status(200).json({ message: "success" });
-  } catch (error) {
-    res.status(500).json({
-      error: "Error resending verification code",
-      details: error.message,
-    });
   }
 };
 
