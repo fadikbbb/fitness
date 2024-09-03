@@ -31,7 +31,7 @@ mongoose
   .catch((error) => console.error("MongoDB connection error:", error));
 
 // Import route handlers
-const adminRouter = require("./routes/adminRouter");
+const adminRouter = require("./routes/userRouter");
 const authRouter = require("./routes/authRouter");
 const commentRouter = require("./routes/commentRouter");
 const subscriptionRouter = require("./routes/subscriptionRouter");

@@ -16,19 +16,25 @@ const validateUserId = [
 ];
 
 // User management routes with authorization, validation, and ID check
-router.post("/", authorize("admin"), adminRouter.createUser);
-router.get("/", authorize("admin"), query(User), adminRouter.getAllUsers);
-router.get("/:id", authorize("admin", "regular", "premium"), validateUserId, adminRouter.getUserById);
-
-router.put(
-  "/:id",
+router.post("/",
   authorize("admin"),
+  adminRouter.createUser);
+router.get("/",
+  authorize("admin"),
+  query(User),
+  adminRouter.getAllUsers);
+router.get("/:id",
+  validateUserId,
+  adminRouter.getUserById
+);
+
+router.patch(
+  "/:id",
   validateUserId,
   adminRouter.updateUser
 );
 router.delete(
   "/:id",
-  authorize("admin"),
   validateUserId,
   adminRouter.deleteUser
 );
