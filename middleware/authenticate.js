@@ -3,9 +3,9 @@ const User = require("../models/UserModel");
 
 const authenticate = async (req, res, next) => {
   try {
-
     // Extract the token from the Authorization header
-    const token = req.headers.authorization && req.headers.authorization.split(" ")[1];
+    const token =
+      req.headers.authorization && req.headers.authorization.split(" ")[1];
 
     if (!token) {
       return res.status(401).json({ error: "No token provided" });
@@ -16,7 +16,7 @@ const authenticate = async (req, res, next) => {
     if (!decoded) {
       return res.status(401).json({ error: "Invalid token" });
     }
-    
+
     // Fetch user from the database
     const user = await User.findById(decoded.userId);
 

@@ -20,17 +20,14 @@ const verificationCodes = new Map();
 // User Registration
 exports.register = async (req, res) => {
   try {
-    const {
-      email,
-      password,
-      firstName,
-      lastName
-    } = req.body;
+    const { email, password, firstName, lastName } = req.body;
 
     // Check if email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ path: "email", error: "Email already exists" });
+      return res
+        .status(400)
+        .json({ path: "email", error: "Email already exists" });
     }
 
     // Generate a new verification code
@@ -48,7 +45,6 @@ exports.register = async (req, res) => {
     await sendVerificationCodeEmail(email, verificationCode);
 
     res.status(200).json({ message: "success" });
-
   } catch (error) {
     res
       .status(500)
@@ -63,9 +59,7 @@ exports.login = async (req, res) => {
 
     // Validate input
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ error: "Email and password are required" });
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
     // Retrieve the user and verify the password
@@ -92,16 +86,14 @@ exports.login = async (req, res) => {
 
     // Send the verification code to the user's email
     await sendVerificationCodeEmail(email, verificationCode);
-    
+
     res.status(200).json({ message: "success" });
   } catch (error) {
-
     res
       .status(500)
       .json({ error: "Error verifying code", details: error.message });
   }
 };
-
 
 // User Logout
 exports.logout = async (req, res) => {
@@ -130,16 +122,8 @@ exports.logout = async (req, res) => {
 
 // send verification code endpoint
 exports.verifyCode = async (req, res) => {
-
   try {
-    const {
-      email,
-      firstName,
-      lastName,
-      password,
-      purpose,
-      code
-    } = req.body;
+    const { email, firstName, lastName, password, purpose, code } = req.body;
 
     // Validate input
     if (!email || !password) {
@@ -148,7 +132,6 @@ exports.verifyCode = async (req, res) => {
 
     const userValidate = await User.findOne({ email });
     if (purpose === "login") {
-
       if (!userValidate) {
         return res.status(404).json({ error: "create an account first" });
       }
@@ -161,7 +144,10 @@ exports.verifyCode = async (req, res) => {
       }
 
       // Check if the code is correct and not expired
-      if (storedCodeData.code !== code || storedCodeData.expiresAt < Date.now()) {
+      if (
+        storedCodeData.code !== code ||
+        storedCodeData.expiresAt < Date.now()
+      ) {
         return res
           .status(401)
           .json({ error: "Invalid or expired verification code" });
@@ -181,14 +167,18 @@ exports.verifyCode = async (req, res) => {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
       userValidate.isActive = true;
+
       await userValidate.save();
+
       // Send access token in response
-      return res.status(200).json({ message: "logged in successfully", token: accessToken });
-
+      return res
+        .status(200)
+        .json({ message: "logged in successfully", token: accessToken });
     } else if (purpose === "register") {
-
       if (userValidate) {
-        return res.status(409).json({ error: "you have been registered before" });
+        return res
+          .status(409)
+          .json({ error: "you have been registered before" });
       }
       // Retrieve the stored verification code
       const storedCodeData = verificationCodes.get(email);
@@ -197,7 +187,10 @@ exports.verifyCode = async (req, res) => {
       }
 
       // Check if the code is correct and not expired
-      if (storedCodeData.code !== code || storedCodeData.expiresAt < Date.now()) {
+      if (
+        storedCodeData.code !== code ||
+        storedCodeData.expiresAt < Date.now()
+      ) {
         return res
           .status(401)
           .json({ error: "Invalid or expired verification code" });
@@ -236,7 +229,6 @@ exports.verifyCode = async (req, res) => {
     await sendVerificationCodeEmail(email, verificationCode);
 
     res.status(200).json({ message: "resended verification code" });
-
   } catch (error) {
     res.status(500).json({
       error: "Error resending verification code",
@@ -299,7 +291,10 @@ exports.resetPassword = async (req, res) => {
     }
 
     // Check if token has expired
-    if (user.passwordResetExpires < Date.now() || user.passwordResetToken !== resetToken) {
+    if (
+      user.passwordResetExpires < Date.now() ||
+      user.passwordResetToken !== resetToken
+    ) {
       return res.status(400).json({ error: "Reset password email expired" });
     }
 
@@ -318,7 +313,7 @@ exports.resetPassword = async (req, res) => {
     res
       .status(500)
       .json({ error: "Error resetting password", details: error.message });
-    console.log(error)
+    console.log(error);
   }
 };
 
