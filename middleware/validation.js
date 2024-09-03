@@ -90,7 +90,7 @@ const userValidationMiddleware = [
       return res.status(400).json({ errors: errors.array() });
     }
     next();
-  }
+  },
 ];
 
 const passwordValidationMiddleware = [
@@ -115,10 +115,10 @@ const passwordValidationMiddleware = [
       return res.status(400).json({ errors: errors.array() });
     }
     next();
-  }
+  },
 ];
 
-
 module.exports = {
-  userValidationMiddleware, passwordValidationMiddleware
+  userValidationMiddleware,
+  passwordValidationMiddleware,
 };

@@ -165,6 +165,10 @@ exports.verifyCode = async (req, res) => {
         sameSite: "Strict",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
+      
+      userValidate.isActive = true;
+
+      await userValidate.save();
 
       // Send access token in response
       return res
