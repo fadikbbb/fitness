@@ -2,15 +2,20 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/UserModel");
 
 const authenticate = async (req, res, next) => {
-  // Extract the token from the Authorization header
-  const token = req.headers?.authorization?.split(" ")[1];
-
-  if (!token) {
-    return res.status(401).json({ error: "No token provided" });
-  }
-
   try {
+    // Extract the token from the Authorization header
+    const token =
+      req.headers.authorization && req.headers.authorization.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+    if (!decoded) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
 
     // Fetch user from the database
     const user = await User.findById(decoded.userId);

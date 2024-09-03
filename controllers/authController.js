@@ -86,6 +86,7 @@ exports.login = async (req, res) => {
 
     // Send the verification code to the user's email
     await sendVerificationCodeEmail(email, verificationCode);
+
     res.status(200).json({ message: "success" });
   } catch (error) {
     res
@@ -165,7 +166,6 @@ exports.verifyCode = async (req, res) => {
         sameSite: "Strict",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
-      
       userValidate.isActive = true;
 
       await userValidate.save();
