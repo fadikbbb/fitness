@@ -2,7 +2,6 @@ const express = require("express");
 const workoutPlanController = require("../controllers/workoutPlanController");
 const authenticate = require("../middleware/authenticate");
 const authorize = require("../middleware/authorize");
-const { validateWorkoutPlan } = require("../middleware/validation");
 const WorkoutPlan = require("../models/WorkoutPlanModel");
 const { query } = require("../middleware/query");
 const router = express.Router();
@@ -14,13 +13,11 @@ router.use(authenticate);
 router.post(
   "/",
   authorize("admin"),
-  validateWorkoutPlan,
   workoutPlanController.createWorkoutPlan
 );
 router.put(
   "/:id",
   authorize("admin"),
-  validateWorkoutPlan,
   workoutPlanController.updateWorkoutPlan
 );
 router.delete(

@@ -18,80 +18,19 @@ const {
 const verificationCodes = new Map();
 
 // User Registration
-exports.createUser = async (req, res) => {
+exports.register = async (req, res) => {
   try {
     const {
       email,
       password,
       firstName,
-      lastName,
-      gender,
-      weight,
-      height,
-      dateOfBirth,
-      role,
-      profileImage,
-      subscriptionStatus,
+      lastName
     } = req.body;
-    let code = req.body.code;
 
-    console.log(req.body);
     // Check if email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ error: "Email already exists" });
-    }
-
-    // Retrieve the stored verification code
-    const storedCodeData = verificationCodes.get(email);
-
-    if (!storedCodeData) {
-      return res.status(401).json({ error: "Verification code not found" });
-    }
-
-    // Check if the code is correct and not expired
-    if (storedCodeData.code !== code || storedCodeData.expiresAt < Date.now()) {
-      return res
-        .status(401)
-        .json({ error: "Invalid or expired verification code" });
-    }
-
-    // Clear the stored verification code
-    verificationCodes.delete(email);
-    // Hash password
-    const hashedPassword = await hashPassword(password);
-
-    // Create and save new user
-    const user = new User({
-      email,
-      passwordHash: hashedPassword,
-      firstName,
-      lastName,
-      gender,
-      weight,
-      height,
-      dateOfBirth,
-      role,
-      profileImage,
-      subscriptionStatus,
-    });
-    await user.save();
-
-    res.status(201).json({ message: "success", user });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Error creating user", details: error.message });
-  }
-};
-
-// send verification code endpoint
-exports.sendVerificationCode = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+      return res.status(400).json({ path: "email", error: "Email already exists" });
     }
 
     // Generate a new verification code
@@ -109,24 +48,24 @@ exports.sendVerificationCode = async (req, res) => {
     await sendVerificationCodeEmail(email, verificationCode);
 
     res.status(200).json({ message: "success" });
+
   } catch (error) {
-    res.status(500).json({
-      error: "Error resending verification code",
-      details: error.message,
-    });
+    res
+      .status(500)
+      .json({ error: "Error creating user", details: error.message });
   }
 };
 
 //  login
 exports.login = async (req, res) => {
   try {
-    let { email, code, password } = req.body;
+    const { email, password } = req.body;
 
     // Validate input
-    if (!email || !code || !password) {
+    if (!email || !password) {
       return res
         .status(400)
-        .json({ error: "Email, verification code, and password are required" });
+        .json({ error: "Email and password are required" });
     }
 
     // Retrieve the user and verify the password
@@ -136,73 +75,32 @@ exports.login = async (req, res) => {
     }
 
     // Compare the provided password with the stored hashed password
-    const isPasswordValid = comparePassword(password, user.passwordHash);
+    const isPasswordValid = await comparePassword(password, user.passwordHash);
     if (!isPasswordValid) {
-      return res.status(401).json({ error: "Check your password" });
+      return res.status(401).json({ error: "Invalid email or password" });
     }
+    // Generate a new verification code
+    const verificationCode = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
 
-    // Retrieve the stored verification code
-    const storedCodeData = verificationCodes.get(email);
-    console.log(storedCodeData);
-    if (!storedCodeData) {
-      return res.status(401).json({ error: "Verification code not found" });
-    }
-
-    // Check if the code is correct and not expired
-    if (storedCodeData.code !== code || storedCodeData.expiresAt < Date.now()) {
-      return res
-        .status(401)
-        .json({ error: "Invalid or expired verification code" });
-    }
-
-    // Clear the stored verification code
-    verificationCodes.delete(email);
-
-    // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user._id);
-
-    // Store refresh token in HttpOnly cookie
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    // Store the new verification code with expiration time
+    verificationCodes.set(email, {
+      code: verificationCode,
+      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes from now
     });
 
-    // Send access token in response
-    res.status(200).json({ message: "success", token: accessToken });
+    // Send the verification code to the user's email
+    await sendVerificationCodeEmail(email, verificationCode);
+    res.status(200).json({ message: "success" });
   } catch (error) {
-    console.error("Verification error:", error.message);
+
     res
       .status(500)
       .json({ error: "Error verifying code", details: error.message });
   }
 };
 
-// Refresh Token
-exports.refreshToken = (req, res) => {
-  try {
-    const { refreshToken } = req.cookies; // Retrieve the refresh token from cookies
-
-    if (!refreshToken) {
-      return res.status(401).json({ error: "Refresh token is required" });
-    }
-
-    // Verify the refresh token
-    const decoded = verifyRefreshToken(refreshToken); // Verify the token
-    const userId = decoded.userId;
-
-    // Generate a new access token
-    const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: process.env.EXPIRES_IN_ACCESS, // Access token expiration time
-    });
-
-    res.json({ accessToken });
-  } catch (error) {
-    console.error("Error refreshing token:", error.message); // Log the error
-    res.status(403).json({ error: "Invalid or expired refresh token" });
-  }
-};
 
 // User Logout
 exports.logout = async (req, res) => {
@@ -229,6 +127,122 @@ exports.logout = async (req, res) => {
   }
 };
 
+// send verification code endpoint
+exports.verifyCode = async (req, res) => {
+
+  try {
+    const {
+      email,
+      firstName,
+      lastName,
+      password,
+      purpose,
+      code
+    } = req.body;
+
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const userValidate = await User.findOne({ email });
+    if (purpose === "login") {
+
+      if (!userValidate) {
+        return res.status(404).json({ error: "create an account first" });
+      }
+
+      // Retrieve the stored verification code
+      const storedCodeData = verificationCodes.get(email);
+
+      if (!storedCodeData) {
+        return res.status(401).json({ error: "login first" });
+      }
+
+      // Check if the code is correct and not expired
+      if (storedCodeData.code !== code || storedCodeData.expiresAt < Date.now()) {
+        return res
+          .status(401)
+          .json({ error: "Invalid or expired verification code" });
+      }
+
+      // Clear the stored verification code
+      verificationCodes.delete(email);
+
+      // Generate tokens
+      const { accessToken, refreshToken } = generateTokens(userValidate._id);
+
+      // Store refresh token in HttpOnly cookie
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "Strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      // Send access token in response
+      return res.status(200).json({ message: "logged in successfully", token: accessToken });
+
+    } else if (purpose === "register") {
+
+      if (userValidate) {
+        return res.status(409).json({ error: "you have been registered before" });
+      }
+      // Retrieve the stored verification code
+      const storedCodeData = verificationCodes.get(email);
+      if (!storedCodeData) {
+        return res.status(401).json({ error: "register first" });
+      }
+
+      // Check if the code is correct and not expired
+      if (storedCodeData.code !== code || storedCodeData.expiresAt < Date.now()) {
+        return res
+          .status(401)
+          .json({ error: "Invalid or expired verification code" });
+      }
+
+      // Clear the stored verification code
+      verificationCodes.delete(email);
+      // Hash password
+      const hashedPassword = await hashPassword(password);
+
+      // Create and save new user
+      const user = new User({
+        email,
+        passwordHash: hashedPassword,
+        firstName,
+        lastName,
+      });
+
+      await user.save();
+
+      return res.status(200).json({ message: "registered successfully" });
+    }
+
+    // Generate a new verification code
+    const verificationCode = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    // Store the new verification code with expiration time
+    verificationCodes.set(email, {
+      code: verificationCode,
+      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes from now
+    });
+
+    // Send the verification code to the user's email
+    await sendVerificationCodeEmail(email, verificationCode);
+
+    res.status(200).json({ message: "resended verification code" });
+
+  } catch (error) {
+    res.status(500).json({
+      error: "Error resending verification code",
+      details: error.message,
+    });
+  }
+};
+
 // Request Password Reset
 exports.requestPasswordReset = async (req, res) => {
   try {
@@ -236,7 +250,7 @@ exports.requestPasswordReset = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "you don't have an account" });
     }
 
     const resetToken = generatePasswordResetToken(user._id); // Token generator function
@@ -246,7 +260,7 @@ exports.requestPasswordReset = async (req, res) => {
 
     await sendPasswordResetEmail(user.email, resetToken); // Function to send reset email
 
-    res.status(200).json({ message: "success" });
+    res.status(200).json({ message: "check your email" });
   } catch (error) {
     res.status(500).json({
       error: "Error requesting password reset",
@@ -258,18 +272,18 @@ exports.requestPasswordReset = async (req, res) => {
 // Reset Password
 exports.resetPassword = async (req, res) => {
   try {
-    const { newPassword, confirmPassword } = req.body;
-    const { token: resetToken } = req.params;
+    const { password, confirmPassword } = req.body;
+    const resetToken = req.params.token;
 
     // Validate input
-    if (!resetToken || !newPassword || !confirmPassword) {
+    if (!resetToken || !password || !confirmPassword) {
       return res.status(400).json({
-        error: "Reset token, new password, and confirm password are required",
+        error: "New password, and confirm password are required",
       });
     }
 
     // Check if newPassword and confirmPassword match
-    if (newPassword !== confirmPassword) {
+    if (password !== confirmPassword) {
       return res.status(400).json({ error: "Passwords do not match" });
     }
 
@@ -279,28 +293,30 @@ exports.resetPassword = async (req, res) => {
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Invalid email" });
     }
 
-    if (user.passwordResetExpires < Date.now()) {
-      return res.status(400).json({ error: "Reset token has expired" });
+    // Check if token has expired
+    if (user.passwordResetExpires < Date.now() || user.passwordResetToken !== resetToken) {
+      return res.status(400).json({ error: "Reset password email expired" });
     }
 
     // Hash the new password
-    const hashedPassword = await hashPassword(newPassword);
+    const hashedPassword = await hashPassword(password);
 
     // Update user password and reset fields
     user.passwordHash = hashedPassword;
     user.passwordResetToken = undefined; // Clear reset token after use
     user.passwordResetExpires = undefined; // Clear expiration after use
     user.passwordChangedAt = Date.now();
-    await user.save();
 
+    await user.save();
     res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
     res
       .status(500)
       .json({ error: "Error resetting password", details: error.message });
+    console.log(error)
   }
 };
 
@@ -348,5 +364,30 @@ exports.updatePassword = async (req, res) => {
       error: "Error updating password",
       details: error.message,
     });
+  }
+};
+
+// Refresh Token
+exports.refreshToken = (req, res) => {
+  try {
+    const { refreshToken } = req.cookies; // Retrieve the refresh token from cookies
+
+    if (!refreshToken) {
+      return res.status(401).json({ error: "Refresh token is required" });
+    }
+
+    // Verify the refresh token
+    const decoded = verifyRefreshToken(refreshToken); // Verify the token
+    const userId = decoded.userId;
+
+    // Generate a new access token
+    const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: process.env.EXPIRES_IN_ACCESS, // Access token expiration time
+    });
+
+    res.json({ accessToken });
+  } catch (error) {
+    console.error("Error refreshing token:", error.message); // Log the error
+    res.status(403).json({ error: "Invalid or expired refresh token" });
   }
 };

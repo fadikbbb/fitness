@@ -11,8 +11,7 @@ const transporter = nodemailer.createTransport({
 
 // Function to send a password reset email
 const sendPasswordResetEmail = async (email, resetToken) => {
-  const resetUrl = `http://localhost:3000/api/v1/auth/password-reset/reset/${resetToken}`;
-
+  const resetUrl = `http://localhost:3000/auth/reset-password/reset/${resetToken}`;
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email, // Use the dynamic recipient email address
@@ -22,10 +21,6 @@ const sendPasswordResetEmail = async (email, resetToken) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log(
-      "Password reset email sent successfully to:",
-      email + " " + resetToken
-    );
   } catch (error) {
     console.error("Error sending password reset email:", error);
   }
@@ -39,12 +34,9 @@ const sendVerificationCodeEmail = async (email, code) => {
     subject: "Your Verification Code",
     text: `Your verification code is: ${code}`,
   };
-
+  console.log(code)
   try {
     await transporter.sendMail(mailOptions);
-    console.log(
-      `Verification code email sent to ${email} successfully ${code}`
-    );
   } catch (error) {
     console.error("Error sending verification code email:", error);
     throw error; // Optionally re-throw the error to handle it further up the chain
