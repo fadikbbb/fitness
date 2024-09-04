@@ -18,7 +18,7 @@ const app = express();
 
 // Setup middleware
 app.use(cookieParser()); // Parse cookies
-app.use(cors()); // Enable Cross-Origin Resource Sharing
+app.use(cors({origin: "http://localhost:3000", credentials: true})); // Enable Cross-Origin Resource Sharing
 app.use(helmet()); // Add security headers
 app.use(express.json()); // Parse JSON requests
 app.use(rateLimiter); // Rate limiting
@@ -31,7 +31,7 @@ mongoose
   .catch((error) => console.error("MongoDB connection error:", error));
 
 // Import route handlers
-const adminRouter = require("./routes/userRouter");
+const userRouter = require("./routes/userRouter");
 const authRouter = require("./routes/authRouter");
 const commentRouter = require("./routes/commentRouter");
 const subscriptionRouter = require("./routes/subscriptionRouter");
@@ -45,7 +45,7 @@ const mealRouter = require('./routes/mealRouter');
 
 // Register routes
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/users", adminRouter);
+app.use("/api/v1/users", userRouter);
 app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/subscriptions", subscriptionRouter);
 app.use("/api/v1/exercises", exerciseRouter);

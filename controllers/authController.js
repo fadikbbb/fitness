@@ -45,6 +45,7 @@ exports.register = async (req, res) => {
     await sendVerificationCodeEmail(email, verificationCode);
 
     res.status(200).json({ message: "success" });
+
   } catch (error) {
     res
       .status(500)
@@ -124,23 +125,43 @@ exports.logout = async (req, res) => {
 exports.verifyCode = async (req, res) => {
   try {
     const { email, firstName, lastName, password, purpose, code } = req.body;
+    console.log(req.body);
 
     // Validate input
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
+    if (code === undefined) {
+      // Generate a new verification code
+      const verificationCode = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+
+      // Store the new verification code with expiration time
+      verificationCodes.set(email, {
+        code: verificationCode,
+        expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes from now
+      });
+
+      // Send the verification code to the user's email
+      await sendVerificationCodeEmail(email, verificationCode);
+
+      return res.status(200).json({ message: "Resent verification code" });
+    }
+
     const userValidate = await User.findOne({ email });
+
     if (purpose === "login") {
       if (!userValidate) {
-        return res.status(404).json({ error: "create an account first" });
+        return res.status(404).json({ error: "Create an account first" });
       }
 
       // Retrieve the stored verification code
       const storedCodeData = verificationCodes.get(email);
-
+      console.log(storedCodeData);
       if (!storedCodeData) {
-        return res.status(401).json({ error: "login first" });
+        return res.status(401).json({ error: "Login first" });
       }
 
       // Check if the code is correct and not expired
@@ -166,24 +187,27 @@ exports.verifyCode = async (req, res) => {
         sameSite: "Strict",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
-      userValidate.isActive = true;
 
+      userValidate.isActive = true;
       await userValidate.save();
 
       // Send access token in response
       return res
         .status(200)
-        .json({ message: "logged in successfully", token: accessToken });
+        .json({ message: "Logged in successfully", token: accessToken });
+
     } else if (purpose === "register") {
       if (userValidate) {
         return res
           .status(409)
-          .json({ error: "you have been registered before" });
+          .json({ error: "You have been registered before" });
       }
+
       // Retrieve the stored verification code
       const storedCodeData = verificationCodes.get(email);
+
       if (!storedCodeData) {
-        return res.status(401).json({ error: "register first" });
+        return res.status(401).json({ error: "Register first" });
       }
 
       // Check if the code is correct and not expired
@@ -198,6 +222,7 @@ exports.verifyCode = async (req, res) => {
 
       // Clear the stored verification code
       verificationCodes.delete(email);
+
       // Hash password
       const hashedPassword = await hashPassword(password);
 
@@ -211,27 +236,11 @@ exports.verifyCode = async (req, res) => {
 
       await user.save();
 
-      return res.status(200).json({ message: "registered successfully" });
+      return res.status(200).json({ message: "Registered successfully" });
     }
-
-    // Generate a new verification code
-    const verificationCode = Math.floor(
-      100000 + Math.random() * 900000
-    ).toString();
-
-    // Store the new verification code with expiration time
-    verificationCodes.set(email, {
-      code: verificationCode,
-      expiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes from now
-    });
-
-    // Send the verification code to the user's email
-    await sendVerificationCodeEmail(email, verificationCode);
-
-    res.status(200).json({ message: "resended verification code" });
   } catch (error) {
     res.status(500).json({
-      error: "Error resending verification code",
+      error: "Error processing request",
       details: error.message,
     });
   }
@@ -317,52 +326,6 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-// Update Password
-exports.updatePassword = async (req, res) => {
-  try {
-    const { oldPassword, newPassword } = req.body;
-    const userId = req.user._id;
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    // Verify old password
-    const isMatch = await comparePassword(oldPassword, user.passwordHash);
-    if (!isMatch) {
-      return res.status(401).json({ error: "Invalid old password" });
-    }
-
-    // Hash the new password
-    const hashedPassword = await hashPassword(newPassword);
-
-    // Update user password
-    user.passwordHash = hashedPassword;
-    user.updatedAt = Date.now();
-    user.passwordChangedAt = Date.now();
-    await user.save();
-
-    const { accessToken, refreshToken } = generateTokens(user._id);
-
-    // Store refresh token in HttpOnly cookie
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    res.status(200).json({
-      accessToken: accessToken,
-      message: "Password updated successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      error: "Error updating password",
-      details: error.message,
-    });
-  }
-};
 
 // Refresh Token
 exports.refreshToken = (req, res) => {

@@ -1,10 +1,13 @@
 const express = require("express");
-const adminRouter = require("../controllers/adminController");
+const userController = require("../controllers/userController");
 const authenticate = require("../middleware/authenticate");
 const authorize = require("../middleware/authorize");
 const { param } = require("express-validator");
 const { query } = require("../middleware/query");
 const User = require("../models/UserModel");
+
+const { userValidationMiddleware, passwordValidationMiddleware } = require("../middleware/validation");
+
 const router = express.Router();
 
 // Apply authentication middleware to all routes
@@ -18,25 +21,32 @@ const validateUserId = [
 // User management routes with authorization, validation, and ID check
 router.post("/",
   authorize("admin"),
-  adminRouter.createUser);
+  userController.createUser);
 router.get("/",
   authorize("admin"),
   query(User),
-  adminRouter.getAllUsers);
+  userController.getAllUsers);
 router.get("/:id",
   validateUserId,
-  adminRouter.getUserById
+  userController.getUserById
 );
 
 router.patch(
+  "/update-password",
+  authenticate,
+  passwordValidationMiddleware,
+  userController.updatePassword
+);
+router.patch(
   "/:id",
   validateUserId,
-  adminRouter.updateUser
+  // userValidationMiddleware,
+  userController.updateUser
 );
 router.delete(
   "/:id",
   validateUserId,
-  adminRouter.deleteUser
+  userController.deleteUser
 );
 
 module.exports = router;
