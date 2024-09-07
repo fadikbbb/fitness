@@ -12,6 +12,11 @@ const exerciseSchema = new Schema({
         type: String,
         trim: true,
     },
+    videoUrl: {
+        type: String,
+        trim: true,
+        required:[true, 'video url is required']
+    },
     type: {
         type: String,
         enum: [
@@ -59,8 +64,6 @@ const exerciseSchema = new Schema({
         default: Date.now,
     },
 });
-
-
 const Exercise = mongoose.model('Exercise', exerciseSchema);
 
 module.exports = Exercise;

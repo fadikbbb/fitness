@@ -19,7 +19,6 @@ const authenticate = async (req, res, next) => {
 
     // Fetch user from the database
     const user = await User.findById(decoded.userId);
-
     if (!user) {
       return res.status(401).json({ error: "User no longer exists" });
     }
