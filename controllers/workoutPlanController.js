@@ -1,51 +1,71 @@
-const WorkoutPlan = require('../models/WorkoutPlanModel');
-const { validationResult } = require('express-validator');
+const workoutPlanService = require('../services/workoutPlanService');
 
 // Create a new workout plan
-exports.createWorkoutPlan = async (req, res) => {
+exports.createWorkoutPlan = async (req, res, next) => {
+    const body = req.body;
+    const { userId } = req.params;
+    console.log(body);
     try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-        const workoutPlan = new WorkoutPlan(req.body);
-        await workoutPlan.save();
-        res.status(201).json(workoutPlan);
+        const workoutPlan = await workoutPlanService.createWorkoutPlan(body, userId);
+        res.status(201).json({ isSuccess: true, message: 'Workout Plan created successfully', workoutPlan });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };
 
-// Update a workout plan
-exports.updateWorkoutPlan = async (req, res) => {
+// Update an exercise in the workout plan
+exports.updateExercise = async (req, res, next) => {
     try {
-        const { id } = req.params;
-        const workoutPlan = await WorkoutPlan.findByIdAndUpdate(id, req.body, { new: true });
-        if (!workoutPlan) return res.status(404).json({ message: 'Workout Plan not found' });
-        res.status(200).json(workoutPlan);
+        const { userId, id: planId, exerciseId } = req.params;
+        const { day } = req.query;
+        const updateData = req.body;
+        const updatedWorkoutPlan = await workoutPlanService.updateExercise(userId, planId, exerciseId, day, updateData);
+        res.status(200).json({ isSuccess: true, message: 'Exercise updated successfully', updatedWorkoutPlan });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };
 
 // Get all workout plans for a user
-exports.getWorkoutPlans = async (req, res) => {
+exports.getWorkoutPlans = async (req, res, next) => {
     try {
-        res.status(200).json({ message: 'Workout Plans retrieved successfully', workoutPlans: res.queryResults });
+        const { workoutPlans, totalWorkoutPlans } = await workoutPlanService.getWorkoutPlans(req.filter, req.search, req.sortBy, req.fields, req.page, req.limit);
+        res.status(200).json({ isSuccess: true, message: 'Workout Plans retrieved successfully', totalWorkoutPlans: totalWorkoutPlans, workoutPlans });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
+    }
+};
+
+// Get a single workout plan by user ID
+exports.getWorkoutPlanByUser = async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+        const workoutPlan = await workoutPlanService.getWorkoutPlanByUser(userId);
+        res.status(200).json({ isSuccess: true, message: 'Workout Plan retrieved successfully', workoutPlan });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Remove an exercise from the workout plan
+exports.removeExercise = async (req, res, next) => {
+    try {
+        const { userId, id: planId, exerciseId } = req.params;
+        const { day } = req.query;
+        const updatedWorkoutPlan = await workoutPlanService.removeExercise(userId, planId, exerciseId, day);
+        res.status(200).json({ isSuccess: true, message: 'Exercise removed successfully', updatedWorkoutPlan });
+    } catch (error) {
+        next(error);
     }
 };
 
 // Delete a workout plan
-exports.deleteWorkoutPlan = async (req, res) => {
+exports.deleteWorkoutPlan = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const workoutPlan = await WorkoutPlan.findByIdAndDelete(id);
-        if (!workoutPlan) return res.status(404).json({ message: 'Workout Plan not found' });
-        res.status(200).json({ message: 'Workout Plan deleted' });
+        await workoutPlanService.deleteWorkoutPlan(id);
+        res.status(200).json({ isSuccess: true, message: 'Workout Plan deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };

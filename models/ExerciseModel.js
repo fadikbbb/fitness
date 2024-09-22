@@ -5,65 +5,50 @@ const Schema = mongoose.Schema;
 const exerciseSchema = new Schema({
     name: {
         type: String,
-        required: true,
+        required: [true, 'Exercise name is required'],
         trim: true,
     },
     description: {
         type: String,
         trim: true,
+        required: [true, 'Description is required']
+    },
+    image: {
+        type: String,
+        trim: true,
+        required: [true, 'Image URL is required']
     },
     videoUrl: {
         type: String,
         trim: true,
-        required:[true, 'video url is required']
+        required: [true, 'Video URL is required']
     },
-    type: {
+    category: {
         type: String,
         enum: [
-            'strength',
-            'cardio',
-            'flexibility',
-            'balance',
-            'endurance',
-            'power',
-            'agility',
-            'mobility',
-            'core',
-            'plyometric',
-            'functional',
-            'rehabilitation',
-            'hiit',
-            'bodyweight',
-            'resistance',
-            'stretching'
-        ],
-        required: true,
+            "strength",
+            "cardio",
+            "flexibility",
+            "balance",
+            "endurance",
+            "team_sports",
+            "combat_sports",
+            "agility",
+            "recreational"
+          ],
+        required: [true, 'Exercise category is required'],
     },
-    duration: {
-        type: Number, // Duration in minutes
-        min: 0,
+    restDuration: {
+        type: Number,
+        min: [0, 'Rest duration must be a positive number'],
     },
     intensity: {
         type: String,
         enum: ['low', 'medium', 'high'],
     },
-    sets: {
-        type: Number,
-        min: 0,
-    },
-    reps: {
-        type: Number,
-        min: 0,
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now,
-    },
-});
+
+}, { timestamps: true });
+
 const Exercise = mongoose.model('Exercise', exerciseSchema);
 
 module.exports = Exercise;

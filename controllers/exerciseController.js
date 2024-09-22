@@ -1,63 +1,62 @@
-const Exercise = require('../models/ExerciseModel');
+const exerciseService = require('../services/exerciseService');
 
 // Create a new exercise
-exports.createExercise = async (req, res) => {
+exports.createExercise = async (req, res, next) => {
     try {
-        const exercise = new Exercise(req.body);
-        await exercise.save();
-        res.status(201).json({ message: 'Exercise created successfully', exercise });
+        const exercise = await exerciseService.createExercise(req.body);
+        res.status(201).send({ isSuccess: true, message: 'Exercise created successfully', exercises: exercise });
     } catch (error) {
-        res.status(500).json({ error: 'Error creating exercise', details: error.message });
+        next(error); // Pass error to the next middleware
     }
 };
 
-// Get all exercises
-exports.getAllExercises = async (req, res) => {
+// Get all exercises with filtering, sorting, and pagination
+exports.getAllExercises = async (req, res, next) => {
     try {
-        res.status(200).json({ message: 'Exercises retrieved successfully', exercises: res.queryResults });
+        const { exercises, totalExercises } = await exerciseService.getAllExercises(req.filter, req.search, req.sortBy, req.fields, req.page, req.limit);
+
+        res.status(200).send({ isSuccess: true, totalExercises: totalExercises, exercises: exercises });
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching exercises', details: error.message });
+        next(error);
     }
 };
+
 
 // Get a single exercise by ID
-exports.getExerciseById = async (req, res) => {
+exports.getExerciseById = async (req, res, next) => {
     try {
-        const exercise = await Exercise.findById(req.params.id);
+        const exercise = await exerciseService.getExerciseById(req.params.id);
         if (!exercise) {
-            return res.status(404).json({ error: 'Exercise not found' });
+            return res.status(404).send({ error: 'Exercise not found' });
         }
-        res.status(200).json(exercise);
+        res.status(200).send({ isSuccess: true, exercise: exercise });
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching exercise', details: error.message });
+        next(error);
     }
 };
 
 // Update an exercise
-exports.updateExercise = async (req, res) => {
+exports.updateExercise = async (req, res, next) => {
     try {
-        // Manually set updatedAt field
-        const updateData = { ...req.body, updatedAt: Date.now() };
-
-        const exercise = await Exercise.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
+        const exercise = await exerciseService.updateExercise(req.params.id, req.body);
         if (!exercise) {
-            return res.status(404).json({ error: 'Exercise not found' });
+            return res.status(404).send({ error: 'Exercise not found' });
         }
-        res.status(200).json({ message: 'Exercise updated successfully', exercise });
+        res.status(200).send({ isSuccess: true, message: 'Exercise updated successfully', exercises: exercise });
     } catch (error) {
-        res.status(500).json({ error: 'Error updating exercise', details: error.message });
+        next(error);
     }
 };
 
 // Delete an exercise
-exports.deleteExercise = async (req, res) => {
+exports.deleteExercise = async (req, res, next) => {
     try {
-        const exercise = await Exercise.findByIdAndDelete(req.params.id);
+        const exercise = await exerciseService.deleteExercise(req.params.id);
         if (!exercise) {
-            return res.status(404).json({ error: 'Exercise not found' });
+            return res.status(404).send({ error: 'Exercise not found' });
         }
-        res.status(200).json({ message: 'Exercise deleted successfully' });
+        res.status(200).send({ isSuccess: true, message: 'Exercise deleted successfully' });
     } catch (error) {
-        res.status(500).json({ error: 'Error deleting exercise', details: error.message });
+        next(error);
     }
 };

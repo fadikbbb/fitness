@@ -10,9 +10,10 @@ const UserSchema = new mongoose.Schema({
       "Please enter a valid email address",
     ],
   },
-  passwordHash: {
+  password: {
     type: String,
     required: true,
+    select: false,
   },
   firstName: {
     type: String,
@@ -24,6 +25,7 @@ const UserSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
+    enum: ["male", "female", "other"],
     required: false,
   },
   weight: {
@@ -40,8 +42,8 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["regular", "premium", "admin"],
-    default: "regular",
+    enum: ["user", "admin"],
+    default: "user",
   },
   profileImage: {
     type: String,
@@ -50,10 +52,6 @@ const UserSchema = new mongoose.Schema({
     type: String,
     enum: ["free", "premium"],
     default: "free",
-  },
-  isPremium: {
-    type: Boolean,
-    default: false,
   },
   isActive: {
     type: Boolean,

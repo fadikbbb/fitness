@@ -1,19 +1,19 @@
 const express = require("express");
 const foodController = require("../controllers/foodController");
-const authenticate = require("../middleware/authenticate");
-const { query } = require("../middleware/query");
-const Food = require("../models/FoodModel");
-const authorize = require("../middleware/authorize");
+const authenticate = require("../middlewares/authenticate");
+const { query } = require("../middlewares/query");
+const authorize = require("../middlewares/authorize");
+
 const router = express.Router();
 
 // Apply authentication middleware if required
 router.use(authenticate);
 
 // Food routes
-router.post("/", authorize("admin"), foodController.createFood); // Create a new food item
-router.get("/", query(Food), foodController.getAllFoods); // Get all food items
-router.get("/:id", foodController.getFoodById); // Get a food item by ID
-router.put("/:id", authorize("admin"), foodController.updateFood); // Update a food item
-router.delete("/:id", authorize("admin"), foodController.deleteFood); // Delete a food item
+router.post("/", authorize("admin"), foodController.createFood);
+router.get("/", query(), foodController.getAllFoods);
+router.get("/:id", foodController.getFoodById);
+router.patch("/:id", authorize("admin"), foodController.updateFood);
+router.delete("/:id", authorize("admin"), foodController.deleteFood);
 
 module.exports = router;

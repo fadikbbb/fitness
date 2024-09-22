@@ -1,32 +1,17 @@
 const express = require("express");
 const workoutPlanController = require("../controllers/workoutPlanController");
-const authenticate = require("../middleware/authenticate");
-const authorize = require("../middleware/authorize");
-const WorkoutPlan = require("../models/WorkoutPlanModel");
-const { query } = require("../middleware/query");
+const authenticate = require("../middlewares/authenticate");
+const authorize = require("../middlewares/authorize");
+const { query } = require("../middlewares/query");
 const router = express.Router();
 
-// Apply authentication middleware
 router.use(authenticate);
 
-// Admin and premium users can create and manage workout plans
-router.post(
-  "/",
-  authorize("admin"),
-  workoutPlanController.createWorkoutPlan
-);
-router.put(
-  "/:id",
-  authorize("admin"),
-  workoutPlanController.updateWorkoutPlan
-);
-router.delete(
-  "/:id",
-  authorize("admin"),
-  workoutPlanController.deleteWorkoutPlan
-);
-
-// All authenticated users can get their workout plans
-router.get("/", query(WorkoutPlan), workoutPlanController.getWorkoutPlans);
+router.get("/", query(), workoutPlanController.getWorkoutPlans);
+router.get("/:userId", workoutPlanController.getWorkoutPlanByUser);
+router.post("/:userId", authorize("admin"), workoutPlanController.createWorkoutPlan);
+router.patch("/:userId/workoutPlan/:id/exercise/:exerciseId", authorize("admin"), workoutPlanController.updateExercise);
+router.delete("/:userId/workoutPlan/:id", authorize("admin"), workoutPlanController.deleteWorkoutPlan);
+router.delete("/:userId/workoutPlan/:id/exercise/:exerciseId", authorize("admin"), workoutPlanController.removeExercise);
 
 module.exports = router;

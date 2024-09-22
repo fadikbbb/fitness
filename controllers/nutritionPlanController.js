@@ -1,94 +1,79 @@
-const NutritionPlan = require('../models/NutritionPlanModel');
-const Meal = require('../models/MealModel');
-const Food = require('../models/FoodModel');
+const nutritionPlanService = require('../services/nutritionPlanService');
 
-// Create a new nutrition plan
-exports.createNutritionPlan = async (req, res) => {
+exports.createNutritionPlan = async (req, res, next) => {
+    const { userId } = req.params;
+    const meal = req.body; // Expect a single meal object
+
+    console.log(meal);
     try {
-        const { userId, meals, totalCalories, startDate, endDate } = req.body;
-
-        // Validate meals
-        if (meals.length > 0) {
-            const validMeals = await Meal.find({ _id: { $in: meals } });
-            if (validMeals.length !== meals.length) {
-                return res.status(400).json({ error: 'One or more meals are invalid' });
-            }
-        }
-
-        const nutritionPlan = await NutritionPlan.create({
-            userId,
-            meals,
-            totalCalories,
-            startDate,
-            endDate,
-        });
-        res.status(201).json(nutritionPlan);
+        const nutritionPlan = await nutritionPlanService.createNutritionPlan(userId, meal);
+        res.status(201).json({ isSuccess: true, message: 'Nutrition plan created successfully', nutritionPlan });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
 
 // Get all nutrition plans
-exports.getNutritionPlans = async (req, res) => {
+exports.getNutritionPlans = async (req, res, next) => {
     try {
-        res.status(200).json({ message: 'Nutrition plans retrieved successfully', nutritionPlans: res.queryResults });
+        const { filter, sortBy, fields, page, limit } = req.query;
+        const nutritionPlans = await nutritionPlanService.getNutritionPlans(filter, sortBy, fields, page, limit);
+        res.status(200).json({ isSuccess: true, message: 'Nutrition plans retrieved successfully', nutritionPlans });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
-// Get a single nutrition plan
-exports.getNutritionPlanById = async (req, res) => {
+// Get nutrition plan by user ID
+exports.getNutritionPlanByUser = async (req, res, next) => {
+    const { userId } = req.params;
     try {
-        const nutritionPlan = await NutritionPlan.findById(req.params.id).populate('meals');
-        if (!nutritionPlan) {
-            return res.status(404).json({ error: 'Nutrition plan not found' });
-        }
-        res.status(200).json(nutritionPlan);
+        const nutritionPlan = await nutritionPlanService.getNutritionPlanByUser(userId);
+        res.status(200).json({ isSuccess: true, message: 'Nutrition plan retrieved successfully', nutritionPlan });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
+    }
+};
+
+// Get a specific nutrition plan by ID
+exports.getNutritionPlanById = async (req, res, next) => {
+    try {
+        const nutritionPlan = await nutritionPlanService.getNutritionPlanById(req.params.id);
+        res.status(200).json({ isSuccess: true, message: 'Nutrition plan retrieved successfully', nutritionPlan });
+    } catch (error) {
+        next(error);
     }
 };
 
 // Update a nutrition plan
-exports.updateNutritionPlan = async (req, res) => {
+exports.updateNutritionPlan = async (req, res, next) => {
+    const { meals, totalCalories, startDate, endDate } = req.body;
     try {
-        
-        const { meals, totalCalories, startDate, endDate } = req.body;
-        if (meals.length > 0) {
-            const validMeals = await Meal.find({ _id: { $in: meals } });
-            if (validMeals.length !== meals.length) {
-                return res.status(400).json({ error: 'One or more meals are invalid' });
-            }
-        }
-
-        const nutritionPlan = await NutritionPlan.findByIdAndUpdate(
-            req.params.id,
-            { meals, totalCalories, startDate, endDate },
-            { new: true, runValidators: true }
-        ).populate('meals');
-
-        if (!nutritionPlan) {
-            return res.status(404).json({ error: 'Nutrition plan not found' });
-        }
-
-        res.status(200).json(nutritionPlan);
+        const nutritionPlan = await nutritionPlanService.updateNutritionPlan(req.params.id, { meals, totalCalories, startDate, endDate });
+        res.status(200).json({ isSuccess: true, message: 'Nutrition plan updated successfully', nutritionPlan });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
 // Delete a nutrition plan
-exports.deleteNutritionPlan = async (req, res) => {
+exports.deleteNutritionPlan = async (req, res, next) => {
     try {
-        const nutritionPlan = await NutritionPlan.findByIdAndDelete(req.params.id);
-        if (!nutritionPlan) {
-            return res.status(404).json({ error: 'Nutrition plan not found' });
-        }
-        res.status(204).json({ message: 'Nutrition plan deleted successfully' });
+        await nutritionPlanService.deleteNutritionPlan(req.params.id);
+        res.status(204).json({ isSuccess: true, message: 'Nutrition plan deleted successfully' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
+exports.removeFoodFromMeal = async (req, res) => {
+    const { userId, foodId, mealId } = req.params;
+    console.log(userId, foodId, mealId);
 
+    try {
+        await nutritionPlanService.removeFoodFromMeal(userId, foodId, mealId);
+        res.status(200).json({ isSuccess: true, message: 'Food deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ isSuccess: false, message: 'Failed to delete food', error: error.message });
+    }
+};

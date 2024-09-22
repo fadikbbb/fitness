@@ -1,66 +1,70 @@
-const Food = require("../models/FoodModel");
+const foodService = require("../services/foodService");
 
 // Create a new food item
-exports.createFood = async (req, res) => {
+exports.createFood = async (req, res, next) => {
     try {
-        const { name, category, calories, protein, carbohydrates, fat, servingSize } = req.body;
-
-        const food = new Food({ name, category, calories, protein, carbohydrates, fat, servingSize });
-        await food.save();
-
-        res.status(201).json({ message: "Food item created successfully", food });
+        const body = req.body;
+        const food = await foodService.createFood(body);
+        res.status(201).json({ isSuccess: true, message: "Food item created successfully", food });
     } catch (error) {
-        res.status(500).json({ error: "Error creating food item", details: error.message });
+        next(error);
     }
 };
 
 // Get all food items
-exports.getAllFoods = async (req, res) => {
+exports.getAllFoods = async (req, res, next) => {
     try {
-        res.status(200).json({ message: "Food items retrieved successfully", foods: res.queryResults });
+        const { foods, totalFoods } =
+            await foodService.getAllFoods(
+                req.filter,
+                req.search,
+                req.sortBy,
+                req.fields,
+                req.page,
+                req.limit
+            );
+        res.status(200).send({ isSuccess: true, totalFoods: totalFoods, foods: foods });
     } catch (error) {
-        res.status(500).json({ error: "Error retrieving food items", details: error.message });
+        next(error);
     }
 };
 
 // Get a food item by ID
-exports.getFoodById = async (req, res) => {
+exports.getFoodById = async (req, res, next) => {
     try {
-        res.status(200).json({ message: "Food item fetched successfully", food: res.queryResults });
+        const { id } = req.params;
+        const food = await foodService.getFoodById(id);
+        res.status(200).json({ isSuccess: true, message: "Food item fetched successfully", food: food });
     } catch (error) {
-        res.status(500).json({ error: "Error retrieving food item", details: error.message });
+        next(error);
     }
 };
 
 // Update a food item
-exports.updateFood = async (req, res) => {
+exports.updateFood = async (req, res, next) => {
     try {
         const { id } = req.params;
         const updates = req.body;
-
-        // Add the updatedAt field manually
-        updates.updatedAt = Date.now();
-
-        const food = await Food.findByIdAndUpdate(id, updates, { new: true });
+        const food = await foodService.updateFood(id, updates);
         if (!food) {
-            return res.status(404).json({ error: "Food item not found" });
+            return res.status(404).json({ isSuccess: false, message: "Food item not found" });
         }
-        res.status(200).json({ message: "Food item updated successfully", food });
+        res.status(200).json({ isSuccess: true, message: "Food item updated successfully", food: food });
     } catch (error) {
-        res.status(500).json({ error: "Error updating food item", details: error.message });
+        next(error);
     }
 };
 
 // Delete a food item
-exports.deleteFood = async (req, res) => {
+exports.deleteFood = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const food = await Food.findByIdAndDelete(id);
+        const food = await foodService.deleteFood(id);
         if (!food) {
-            return res.status(404).json({ error: "Food item not found" });
+            return res.status(404).json({ isSuccess: false, message: "Food item not found" });
         }
-        res.status(200).json({ message: "Food item deleted successfully" });
+        res.status(200).json({ isSuccess: true, message: "Food item deleted successfully" });
     } catch (error) {
-        res.status(500).json({ error: "Error deleting food item", details: error.message });
+        next(error);
     }
 };

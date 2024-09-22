@@ -1,12 +1,11 @@
 const express = require("express");
 const userController = require("../controllers/userController");
-const authenticate = require("../middleware/authenticate");
-const authorize = require("../middleware/authorize");
+const authenticate = require("../middlewares/authenticate");
+const authorize = require("../middlewares/authorize");
 const { param } = require("express-validator");
-const { query } = require("../middleware/query");
-const User = require("../models/UserModel");
+const { query } = require("../middlewares/query");
 
-const { userValidationMiddleware, passwordValidationMiddleware } = require("../middleware/validation");
+const { passwordValidationMiddleware } = require("../middlewares/validation");
 
 const router = express.Router();
 
@@ -24,8 +23,9 @@ router.post("/",
   userController.createUser);
 router.get("/",
   authorize("admin"),
-  query(User),
+  query(),
   userController.getAllUsers);
+
 router.get("/:id",
   validateUserId,
   userController.getUserById
