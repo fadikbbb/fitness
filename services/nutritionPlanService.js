@@ -99,77 +99,6 @@ exports.createNutritionPlan = async (userId, meal) => {
 };
 
 
-
-// Update a specific meal in a nutrition plan
-exports.updateMeal = async (userId, planId, mealName, updateData) => {
-    try {
-        // Validate user and plan
-        const nutritionPlan = await NutritionPlan.findOne({ userId, _id: planId });
-
-        if (!nutritionPlan) {
-            throw new apiError('Nutrition plan not found', 404);
-        }
-
-        // Find the specific meal
-        const meal = nutritionPlan.meals.find(m => m.nameMeal === mealName);
-        if (!meal) {
-            throw new apiError('Meal not found in the nutrition plan', 404);
-        }
-
-        // Update meal data (e.g., mealCalories, foods)
-        if (updateData.mealCalories) meal.mealCalories = updateData.mealCalories;
-        if (updateData.foods) {
-            await Promise.all(updateData.foods.map(async (foodId) => {
-                if (!mongoose.Types.ObjectId.isValid(foodId)) {
-                    throw new apiError('Invalid food ID', 400);
-                }
-
-                const foodExists = await Food.findById(foodId);
-                if (!foodExists) {
-                    throw new apiError('Food not found', 404);
-                }
-            }));
-            meal.foods = updateData.foods;
-        }
-
-        await nutritionPlan.save();
-        return nutritionPlan;
-    } catch (error) {
-        throw error;
-    }
-};
-
-// Remove a meal from the nutrition plan
-exports.removeMeal = async (userId, planId, mealName) => {
-    try {
-        // Validate inputs
-        if (!userId || !planId || !mealName) {
-            throw new apiError('Invalid input parameters', 400);
-        }
-
-        // Find the nutrition plan
-        const nutritionPlan = await NutritionPlan.findOne({ userId, _id: planId });
-
-        if (!nutritionPlan) {
-            throw new apiError('Nutrition plan not found', 404);
-        }
-
-        // Check if the meal exists
-        const mealIndex = nutritionPlan.meals.findIndex(m => m.nameMeal === mealName);
-        if (mealIndex === -1) {
-            throw new apiError('Meal not found in the nutrition plan', 404);
-        }
-
-        // Remove the meal
-        nutritionPlan.meals.splice(mealIndex, 1);
-
-        await nutritionPlan.save();
-        return nutritionPlan;
-    } catch (error) {
-        throw error;
-    }
-};
-
 // Get all nutrition plans with filters and pagination
 exports.getNutritionPlans = async (filter, search, sortBy, fields, page, limit) => {
     try {
@@ -234,6 +163,61 @@ exports.deleteNutritionPlan = async (planId) => {
         throw error;
     }
 };
+exports.updateMeal = async (userId, planId, mealId, nameMeal) => {
+    console.log(nameMeal);
+    try {
+        // Validate user and plan
+        const nutritionPlan = await NutritionPlan.findOne({ userId, _id: planId });
+        if (!nutritionPlan) {
+            throw new apiError('Nutrition plan not found', 404);
+        }
+        console.log(nutritionPlan);
+        // Find the specific meal
+        const meal = nutritionPlan.meals.find(m => m._id.toString() === mealId);
+        if (!meal) {
+            throw new apiError('Meal not found in the nutrition plan', 404);
+        }
+        console.log(meal);
+        // Update the meal name
+        meal.nameMeal = nameMeal;
+        // Save the updated nutrition plan
+        await nutritionPlan.save();
+        return nutritionPlan;
+    } catch (error) {
+        throw error;
+    }
+};
+exports.removeMeal = async (userId, planId, mealId) => {
+    try {
+        // Validate inputs
+        if (!userId || !planId || !mealId) {
+            throw new apiError('Invalid input parameters', 400);
+        }
+
+        // Find the nutrition plan
+        const nutritionPlan = await NutritionPlan.findOne({ userId, _id: planId });
+
+        if (!nutritionPlan) {
+            throw new apiError('Nutrition plan not found', 404);
+        }
+        // Check if the meal exists
+        const mealIndex = nutritionPlan.meals.findIndex(m => {
+
+            return m._id.toString() === mealId; // Add 'return' here
+        });
+
+
+        if (mealIndex === -1) {
+            throw new apiError('Meal not found in the nutrition plan', 404);
+        }
+        nutritionPlan.meals.splice(mealIndex, 1);
+        nutritionPlan.totalCalories = nutritionPlan.meals.reduce((acc, meal) => acc + meal.mealCalories, 0);
+        await nutritionPlan.save();
+        return nutritionPlan;
+    } catch (error) {
+        throw error;
+    }
+};
 
 exports.removeFoodFromMeal = async (userId, foodId, mealId) => {
     try {
@@ -292,3 +276,41 @@ exports.removeFoodFromMeal = async (userId, foodId, mealId) => {
     }
 };
 
+exports.updateFoodQuantity = async (userId, mealId, foodId, quantity) => {
+    console.log(userId, mealId, foodId, quantity)
+    try {
+        const nutritionPlan = await NutritionPlan.findOne({ userId });
+        if (!nutritionPlan) {
+            throw new apiError('Nutrition plan not found', 404);
+        }
+        const meal = nutritionPlan.meals.find(m => m._id.toString() === mealId);
+        if (!meal) {
+            throw new apiError('Meal not found in the nutrition plan', 404);
+        }
+
+        const foodIndex = meal.foods.findIndex(f =>
+            f.foodId.toString() === foodId
+        );
+        console.log(foodIndex)
+        if (foodIndex === -1) {
+            throw new apiError('Food not found in the meal', 404);
+        }
+
+        meal.foods[foodIndex].quantity = quantity;
+        meal.mealCalories = await Promise.all(
+            meal.foods.map(async (f) => {
+                const food = await Food.findById(f.foodId);
+                if (food && food.calories && food.weight) {
+                    return (Number(food.calories) * Number(f.quantity)) / Number(food.weight);
+                }
+                return 0;
+            })
+        ).then(calories => calories.reduce((acc, curr) => acc + curr, 0));
+        nutritionPlan.totalCalories = nutritionPlan.meals.reduce((acc, meal) => acc + meal.mealCalories, 0);
+        await nutritionPlan.save();
+
+        return nutritionPlan;
+    } catch (error) {
+        throw error;
+    }
+};

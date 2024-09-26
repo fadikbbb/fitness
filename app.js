@@ -2,8 +2,11 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
-require("dotenv").config();
+const xss = require('xss-clean');
 const cookieParser = require("cookie-parser");
+const hpp = require('hpp');
+require("dotenv").config();
+
 
 // Import middleware
 const errorHandler = require("./middlewares/errorHandler");
@@ -22,6 +25,8 @@ app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(xss());
+app.use(hpp());
 app.use(rateLimiter);
 
 

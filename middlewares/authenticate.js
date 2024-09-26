@@ -10,9 +10,8 @@ const authenticate = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({ error: "No token provided" });
     }
-
+    
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
     if (!decoded) {
       return res.status(401).json({ error: "Invalid token" });
     }
@@ -27,7 +26,6 @@ const authenticate = async (req, res, next) => {
     if (!user.isActive) {
       return res.status(401).json({ error: "User is not Active" });
     }
-
     // Check if password was changed after the token was issued
     if (user.passwordChangedAt) {
       const passwordChangedAtTimestamp = parseInt(

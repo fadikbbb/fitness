@@ -16,12 +16,12 @@ const exerciseSchema = new Schema({
     image: {
         type: String,
         trim: true,
-        required: [true, 'Image URL is required']
+        required: [false, 'Image URL is required']
     },
     videoUrl: {
         type: String,
         trim: true,
-        required: [true, 'Video URL is required']
+        required: [false, 'Video URL is required']
     },
     category: {
         type: String,
@@ -35,7 +35,7 @@ const exerciseSchema = new Schema({
             "combat_sports",
             "agility",
             "recreational"
-          ],
+        ],
         required: [true, 'Exercise category is required'],
     },
     restDuration: {

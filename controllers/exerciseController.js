@@ -3,7 +3,10 @@ const exerciseService = require('../services/exerciseService');
 // Create a new exercise
 exports.createExercise = async (req, res, next) => {
     try {
-        const exercise = await exerciseService.createExercise(req.body);
+        const body = { ...req.body };
+        const imageFile = req.files['image'] ? req.files['image'][0] : null;
+        const videoFile = req.files['video'] ? req.files['video'][0] : null;
+        const exercise = await exerciseService.createExercise(body, imageFile, videoFile);
         res.status(201).send({ isSuccess: true, message: 'Exercise created successfully', exercises: exercise });
     } catch (error) {
         next(error); // Pass error to the next middleware
@@ -13,7 +16,14 @@ exports.createExercise = async (req, res, next) => {
 // Get all exercises with filtering, sorting, and pagination
 exports.getAllExercises = async (req, res, next) => {
     try {
-        const { exercises, totalExercises } = await exerciseService.getAllExercises(req.filter, req.search, req.sortBy, req.fields, req.page, req.limit);
+        const { exercises, totalExercises } = await exerciseService.getAllExercises(
+            req.filter,
+            req.search, 
+            req.sortBy, 
+            req.fields, 
+            req.page, 
+            req.limit
+        );
 
         res.status(200).send({ isSuccess: true, totalExercises: totalExercises, exercises: exercises });
     } catch (error) {
@@ -38,7 +48,10 @@ exports.getExerciseById = async (req, res, next) => {
 // Update an exercise
 exports.updateExercise = async (req, res, next) => {
     try {
-        const exercise = await exerciseService.updateExercise(req.params.id, req.body);
+
+        const imageFile = req.files['image'] ? req.files['image'][0] : null;
+        const videoFile = req.files['video'] ? req.files['video'][0] : null;
+        const exercise = await exerciseService.updateExercise(req.params.id, req.body, imageFile, videoFile);
         if (!exercise) {
             return res.status(404).send({ error: 'Exercise not found' });
         }

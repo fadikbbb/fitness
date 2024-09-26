@@ -8,7 +8,7 @@ const { generateVerificationCode, storeVerificationCode, validateVerificationCod
 // Create User Service
 exports.createUser = async (userData) => {
     try {
-       
+
         const { email, password, firstName, lastName, gender, weight, height, dateOfBirth, role, profileImage, subscriptionStatus } = userData;
 
         // Hash password before saving
@@ -112,17 +112,6 @@ exports.updateUser = async (userIdOfUpdated, loggedInUser, updates) => {
     }
 };
 
-// Delete user
-exports.deleteUser = async (userId) => {
-    try {
-        const user = await User.findByIdAndDelete(userId);
-        if (!user) throw new apiError("User not found", 404);
-        return user;
-    } catch (error) {
-        throw error;
-    }
-};
-
 // Update user password
 exports.updatePassword = async (userId, oldPassword, newPassword, confirmPassword) => {
     try {
@@ -146,6 +135,29 @@ exports.updatePassword = async (userId, oldPassword, newPassword, confirmPasswor
         user.passwordChangedAt = Date.now();
 
         await user.save();
+        return user;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Delete user
+exports.deleteUser = async (userId) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) throw new apiError("User not found", 404);
+
+        const userNutritionPlans = await UserNutritionPlan.find({ userId: userId });
+        if (userNutritionPlans) {
+            await UserNutritionPlan.deleteMany({ userId: userId });
+        }
+        
+        const userWorkouts = await UserWorkout.find({ userId: userId });
+        if (userWorkouts) {
+            await UserWorkout.deleteMany({ userId: userId });
+        }
+
+        await user.remove();
         return user;
     } catch (error) {
         throw error;

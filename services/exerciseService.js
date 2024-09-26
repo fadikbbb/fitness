@@ -1,31 +1,52 @@
 const Exercise = require('../models/ExerciseModel');
+const WorkoutPlan = require('../models/WorkoutPlanModel');
 const apiError = require('../utils/apiError');
+const { uploadToStorage, deleteFile, updateFile } = require('../utils/uploadUtils');
 
 // Create a new exercise
-exports.createExercise = async (data) => {
-    const existingExercise = await Exercise.findOne({ name: data.name });
-    if (existingExercise) {
-        throw new apiError('Exercise already exists', 400);
+exports.createExercise = async (body, imageFile, videoFile) => {
+    try {
+        const existingExercise = await Exercise.findOne({ name: body.name });
+        if (existingExercise) {
+            throw new apiError('Exercise already exists', 400);
+        }
+
+        if (!imageFile) {
+            throw new apiError('Image is required', 400);
+        }
+
+        body.image = await uploadToStorage(imageFile.originalname, imageFile.mimetype, imageFile.buffer, 'img');
+
+        if (!videoFile) {
+            throw new apiError('Video is required', 400);
+        }
+
+        body.videoUrl = await uploadToStorage(videoFile.originalname, videoFile.mimetype, videoFile.buffer, 'video');
+
+        const exercise = new Exercise(body);
+        await exercise.save();
+        return exercise;
+    } catch (error) {
+        throw error;
     }
-    const exercise = new Exercise(data);
-    await exercise.save();
-    return exercise;
 };
 
 
 // Get all exercises
 exports.getAllExercises = async (filter, search, sortBy, fields, page, limit) => {
     try {
-        
+
         let exercisesQuery = Exercise.find(filter);
         // Handle search if the 'search' parameter is present (assuming you are searching by name or other fields)
         if (search !== null) {
             const searchRegex = new RegExp(search, 'i');
             exercisesQuery = exercisesQuery.find({
                 $or: [
-                    { name: { $regex: searchRegex} },
+                    { name: { $regex: searchRegex } },
                 ]
             });
+            filter = exercisesQuery;
+
         }
         // Sorting
         if (sortBy) {
@@ -46,7 +67,8 @@ exports.getAllExercises = async (filter, search, sortBy, fields, page, limit) =>
         // Fetching exercises and total count
         const [exercises, totalExercises] = await Promise.all([
             exercisesQuery,
-            Exercise.countDocuments(filter)  // Count total exercises matching the filter
+            Exercise.countDocuments(filter),
+
         ]);
 
         return { totalExercises, exercises };
@@ -75,12 +97,26 @@ exports.getExerciseById = async (id) => {
 };
 
 // Update an exercise
-exports.updateExercise = async (id, data) => {
+exports.updateExercise = async (id, body, imageFile, videoFile) => {
     try {
-        const exercise = await Exercise.findByIdAndUpdate(id, data, { new: true });
+        let exercise = await Exercise.findById(id);
         if (!exercise) {
             throw new apiError('Exercise not found', 404);
         }
+
+        if (imageFile) {
+            body.image = await updateFile(exercise.image, imageFile.originalname, imageFile.mimetype, imageFile.buffer, 'img');
+        } else {
+            body.image = exercise.image;
+        }
+
+        if (videoFile) {
+            body.videoUrl = await updateFile(exercise.videoUrl, videoFile.originalname, videoFile.mimetype, videoFile.buffer, 'video');
+        } else {
+            body.videoUrl = exercise.videoUrl;
+        }
+
+        exercise = Exercise.findByIdAndUpdate(id, body)
 
         return exercise;
     } catch (error) {
@@ -91,14 +127,38 @@ exports.updateExercise = async (id, data) => {
 // Delete an exercise
 exports.deleteExercise = async (id) => {
     try {
-        const exercise = await Exercise.findByIdAndDelete(id);
-
+        // Find the exercise to be deleted
+        let exercise = await Exercise.findById(id);
         if (!exercise) {
             throw new apiError('Exercise not found', 404);
         }
 
+        // Delete associated files if they exist
+        if (exercise.image && exercise.image !== '' && exercise.image !== null && exercise.image !== "undefined") {
+            await deleteFile(exercise.image);
+        }
+
+        if (exercise.videoUrl && exercise.videoUrl !== '' && exercise.videoUrl !== null && exercise.videoUrl !== "undefined") {
+            await deleteFile(exercise.videoUrl);
+        }
+
+        // Remove the exercise reference from all workout plans and check for empty days
+        await WorkoutPlan.updateMany(
+            { 'days.exercises.exerciseId': id },
+            { $pull: { 'days.$[].exercises': { exerciseId: id } } }
+        );
+        // Remove any day that has an empty exercises array
+        await WorkoutPlan.updateMany(
+            {}, // No filter needed here because we are just checking for empty days
+            { $pull: { days: { exercises: { $size: 0 } } } } // Remove any day where exercises array is empty
+        )
+
+        // Finally, delete the exercise from the exercises collection
+        exercise = await Exercise.findByIdAndDelete(id);
         return exercise;
+
     } catch (error) {
-        throw error
+        throw error;
     }
 };
+

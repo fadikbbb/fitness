@@ -13,19 +13,11 @@ exports.logout = async (user) => {
 
 // Refresh Token
 exports.refreshToken = (refreshToken) => {
-
-    if (!refreshToken) {
-        throw new apiError("Refresh token is required", 400);
-    }
-
     try {
-        // Verify the refresh token
+        console.log(refreshToken);
         const decoded = verifyRefreshToken(refreshToken);
         const userId = decoded.userId;
-
-        // Generate a new access token
         const { accessToken } = generateTokens(userId)
-
         return { accessToken };
     } catch (error) {
         next(error);

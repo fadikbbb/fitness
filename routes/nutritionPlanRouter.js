@@ -29,9 +29,9 @@ router.get('/:id', nutritionPlanController.getNutritionPlanById);
 
 // Route for updating a nutrition plan (admin only)
 router.patch(
-  '/:id',
+  "/:userId/meals/:mealId/foods/:foodId",
   authorize('admin'),
-  nutritionPlanController.updateNutritionPlan
+  nutritionPlanController.updateFoodQuantity
 );
 
 // Route for deleting a nutrition plan (admin only)
@@ -41,11 +41,22 @@ router.delete(
   nutritionPlanController.deleteNutritionPlan
 );
 
+
 // Route for adding food to a nutrition plan
 router.delete(
   '/:userId/meals/:mealId/foods/:foodId',
   authorize('admin'),
   nutritionPlanController.removeFoodFromMeal
+);
+router.delete(
+  '/:userId/plans/:planId/meals/:mealId',
+  authorize('admin'),
+  nutritionPlanController.removeMeal
+);
+router.patch(
+  '/:userId/plans/:planId/meals/:mealId',
+  authorize('admin'),
+  nutritionPlanController.updateMeal
 );
 
 module.exports = router;

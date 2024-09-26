@@ -1,11 +1,18 @@
 const foodService = require("../services/foodService");
 
-// Create a new food item
+// Controller method to create food
 exports.createFood = async (req, res, next) => {
     try {
-        const body = req.body;
-        const food = await foodService.createFood(body);
-        res.status(201).json({ isSuccess: true, message: "Food item created successfully", food });
+        const body = { ...req.body };
+        const imageFile = req.files['image'] ? req.files['image'][0] : null;
+        // Call the service to create the food item
+        const food = await foodService.createFood(body, imageFile);
+
+        res.status(201).json({
+            isSuccess: true,
+            message: "Food item created successfully",
+            food
+        });
     } catch (error) {
         next(error);
     }
@@ -40,30 +47,47 @@ exports.getFoodById = async (req, res, next) => {
     }
 };
 
-// Update a food item
 exports.updateFood = async (req, res, next) => {
     try {
         const { id } = req.params;
         const updates = req.body;
-        const food = await foodService.updateFood(id, updates);
-        if (!food) {
+
+        if (req.files) {
+            updates.image = req.files['image'] ? req.files['image'][0] : null;; // Make sure req.file is populated correctly
+        }
+
+        // Call the service to update the food item
+        const updatedFood = await foodService.updateFood(id, updates);
+        if (!updatedFood) {
             return res.status(404).json({ isSuccess: false, message: "Food item not found" });
         }
-        res.status(200).json({ isSuccess: true, message: "Food item updated successfully", food: food });
+
+        res.status(200).json({ isSuccess: true, message: "Food item updated successfully", food: updatedFood });
     } catch (error) {
         next(error);
     }
 };
 
-// Delete a food item
+
+// Controller method to delete a food item
 exports.deleteFood = async (req, res, next) => {
     try {
         const { id } = req.params;
+
+        // Call the service to delete the food item
         const food = await foodService.deleteFood(id);
+
         if (!food) {
-            return res.status(404).json({ isSuccess: false, message: "Food item not found" });
+            return res.status(404).json({
+                isSuccess: false,
+                message: "Food item not found"
+            });
         }
-        res.status(200).json({ isSuccess: true, message: "Food item deleted successfully" });
+
+        res.status(200).json({
+            isSuccess: true,
+            message: "Food item deleted successfully"
+        });
     } catch (error) {
         next(error);
     }

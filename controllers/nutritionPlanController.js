@@ -47,10 +47,13 @@ exports.getNutritionPlanById = async (req, res, next) => {
 };
 
 // Update a nutrition plan
-exports.updateNutritionPlan = async (req, res, next) => {
-    const { meals, totalCalories, startDate, endDate } = req.body;
+exports.updateFoodQuantity = async (req, res, next) => {
+    console.log(req.body);
+    console.log(req.params);
+    const { userId,mealId,foodId } = req.params;
+    const {quantity} = req.body;
     try {
-        const nutritionPlan = await nutritionPlanService.updateNutritionPlan(req.params.id, { meals, totalCalories, startDate, endDate });
+        const nutritionPlan = await nutritionPlanService.updateFoodQuantity(userId,mealId,foodId,quantity);
         res.status(200).json({ isSuccess: true, message: 'Nutrition plan updated successfully', nutritionPlan });
     } catch (error) {
         next(error);
@@ -66,6 +69,32 @@ exports.deleteNutritionPlan = async (req, res, next) => {
         next(error);
     }
 };
+
+// Remove meal
+exports.removeMeal = async (req, res) => {
+    const { userId, planId,mealId} = req.params;
+
+    try {
+        const nutritionPlan = await nutritionPlanService.removeMeal(userId, planId, mealId);
+        res.status(200).json({ isSuccess: true, message: 'Meal deleted successfully', nutritionPlan });
+    } catch (error) {
+        res.status(500).json({ isSuccess: false, message: 'Failed to delete meal', error: error.message });
+    }
+};
+
+//update meal
+exports.updateMeal = async (req, res) => {
+    const { userId, planId, mealId } = req.params;
+    const { nameMeal } = req.body;
+    try {
+        const nutritionPlan = await nutritionPlanService.updateMeal(userId, planId, mealId, nameMeal);
+        res.status(200).json({ isSuccess: true, message: 'Meal updated successfully', nutritionPlan });
+    } catch (error) {
+        res.status(500).json({ isSuccess: false, message: 'Failed to update meal', error: error.message });
+    }
+};
+
+// Remove food
 exports.removeFoodFromMeal = async (req, res) => {
     const { userId, foodId, mealId } = req.params;
     console.log(userId, foodId, mealId);
