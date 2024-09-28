@@ -89,6 +89,7 @@ const getPasswordResetEmailDesign = (resetUrl) => `
 // Function to send a password reset email
 const sendPasswordResetEmail = async (email, resetToken) => {
   const resetUrl = `http://localhost:3000/auth/reset-password/reset/${resetToken}`;
+  console.log(resetUrl);
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,

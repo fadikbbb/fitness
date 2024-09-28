@@ -8,14 +8,12 @@ const query = () => {
             console.log(filter)
             const excludeFields = ['search', 'page', 'sort', 'limit', 'fields'];
             excludeFields.forEach((field) => delete filter[field]);
-
             let queryStr = JSON.stringify(filter).replace(
                 /\b(gte|gt|lte|lt)\b/g,
                 (match) => `$${match}`
             );
-
+            
             filter = JSON.parse(queryStr);
-
             // Assign query params to req object
             req.search = req.query.search ? req.query.search.trim() : null;
             req.filter = filter;

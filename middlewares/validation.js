@@ -43,7 +43,7 @@ const registerValidationMiddleware = [
 
 
 const passwordValidationMiddleware = [
-  body("newPassword")
+  body("password")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long")
     .matches(/[A-Z]/)

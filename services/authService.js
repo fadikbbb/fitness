@@ -1,5 +1,6 @@
 const { verifyRefreshToken, generateTokens } = require("../utils/tokenUtils");
 const apiError = require("../utils/apiError");
+const User = require("../models/UserModel");
 
 // User Logout
 exports.logout = async (user) => {
@@ -12,14 +13,27 @@ exports.logout = async (user) => {
 };
 
 // Refresh Token
-exports.refreshToken = (refreshToken) => {
+exports.refreshToken = async (refreshToken) => {
     try {
-        console.log(refreshToken);
+        if (!refreshToken) {
+            throw new apiError("No refresh token provided", 401);
+        }
+
         const decoded = verifyRefreshToken(refreshToken);
         const userId = decoded.userId;
-        const { accessToken } = generateTokens(userId)
-        return { accessToken };
+        const user = await User.findById(userId);
+
+        if (!user) {
+            throw new apiError("User not found", 404);
+        }
+
+        if (!user.isActive) {
+            throw new apiError("User is not active", 401);
+        }
+        const role = user.role;
+        const { accessToken } = generateTokens(userId, role)
+        return accessToken;
     } catch (error) {
-        next(error);
+        throw error;
     }
 };

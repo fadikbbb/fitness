@@ -12,6 +12,10 @@ require("dotenv").config();
 const errorHandler = require("./middlewares/errorHandler");
 const rateLimiter = require("./middlewares/rateLimiter");
 const { connectDB } = require('./config/connection');
+const coreOptions = {
+  origin: process.env.NODE_ENV === "production" ? "https://fitness-app-hadi.herokuapp.com" : "http://localhost:3000",
+  credentials: true,
+};
 
 // Connect to MongoDB
 connectDB();
@@ -21,7 +25,7 @@ const app = express();
 
 // Setup middleware
 app.use(cookieParser());
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(cors(coreOptions));
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());

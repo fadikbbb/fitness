@@ -25,7 +25,7 @@ router.post("/reset-password/request", authController.requestPasswordReset);
 router.post("/reset-password/reset/:token", passwordValidationMiddleware, authController.resetPassword);
 
 // Refresh Token
-router.post("/refresh-token", authenticate, authController.refreshToken);
+router.post("/refresh-token", authController.refreshToken);
 
 // Update Password
 

@@ -18,8 +18,6 @@ const generateTokens = (userId, role) => {
                 expiresIn: process.env.EXPIRES_IN_REFRESH,
             }
         );
-        console.log(refreshToken, "refreshToken");
-        console.log(accessToken, "accessToken");
         return { accessToken, refreshToken };
     } catch (error) {
         console.log(error);

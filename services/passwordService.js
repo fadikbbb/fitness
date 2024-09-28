@@ -52,7 +52,7 @@ exports.resetPassword = async (resetToken, password, confirmPassword) => {
         user.passwordChangedAt = Date.now();
 
         await user.save();
-        return { message: "Password updated successfully" };
+        return "Password updated successfully";
     } catch (error) {
         throw error;
     }
