@@ -8,7 +8,7 @@ const { generateVerificationCode, storeVerificationCode, validateVerificationCod
 // Create User Service
 exports.createUser = async (userData) => {
     try {
-
+console.log(userData);
         const { email, password, firstName, lastName, gender, weight, height, dateOfBirth, role, profileImage, subscriptionStatus } = userData;
 
         // Hash password before saving

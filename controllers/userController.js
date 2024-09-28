@@ -4,6 +4,7 @@ const { generateTokens } = require("../utils/tokenUtils");
 // Create User
 exports.createUser = async (req, res, next) => {
   try {
+    console.log(req.body)
     const user = await userService.createUser(req.body);
     res.status(201).json({ isSuccess: true, message: "User created successfully", user });
   } catch (error) {

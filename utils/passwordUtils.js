@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 
 // Function to hash a password
 async function hashPassword(password) {
+    console.log(password);
     const hashedPassword = await bcrypt.hash(password, 12);
     return hashedPassword;
 }

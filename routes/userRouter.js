@@ -5,7 +5,7 @@ const authorize = require("../middlewares/authorize");
 const { param } = require("express-validator");
 const { query } = require("../middlewares/query");
 
-const { passwordValidationMiddleware } = require("../middlewares/validation");
+const { passwordValidationMiddleware, userValidationMiddleware } = require("../middlewares/validation");
 
 const router = express.Router();
 
@@ -19,7 +19,8 @@ const validateUserId = [
 
 // User management routes with authorization, validation, and ID check
 router.post("/",
-  authorize("admin"),
+  authorize("admin"), 
+  userValidationMiddleware,
   userController.createUser);
 router.get("/",
   authorize("admin"),
