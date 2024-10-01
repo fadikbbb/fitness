@@ -84,7 +84,7 @@ exports.createWorkoutPlan = async (body, userId) => {
     }
 };
 
-exports.updateExercise = async (userId, planId,exerciseId, day, updateData) => {
+exports.updateExercise = async (userId, planId, exerciseId, day, updateData) => {
     try {
         const data =
         {
@@ -116,6 +116,7 @@ exports.updateExercise = async (userId, planId,exerciseId, day, updateData) => {
         exercise.sets = updateData.sets;
         exercise.reps = updateData.reps;
         exercise.restDuration = updateData.restDuration;
+        exercise.note = updateData.note;
 
         // Save the updated workout plan
         await workoutPlan.save();

@@ -36,7 +36,7 @@ const workoutPlanSchema = new mongoose.Schema({
                         min: [1, 'Rest duration must be at least 1'],
                         required: true,
                     },
-                    Note: {
+                    note: {
                         type: String,
                         trim: true,
                     },
