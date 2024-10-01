@@ -4,11 +4,13 @@ const { hashPassword, comparePassword } = require("../utils/passwordUtils");
 const { sendVerificationCodeEmail } = require("../utils/emailUtils");
 const { generateTokens } = require("../utils/tokenUtils");
 const { generateVerificationCode, storeVerificationCode, validateVerificationCode } = require("../utils/verificationUtils");
-
+const UserNutritionPlan = require("../models/NutritionPlanModel");
+const UserWorkout = require("../models/WorkoutPlanModel");
+const Comment = require("../models/CommentModel");
 // Create User Service
 exports.createUser = async (userData) => {
     try {
-console.log(userData);
+        console.log(userData);
         const { email, password, firstName, lastName, gender, weight, height, dateOfBirth, role, profileImage, subscriptionStatus } = userData;
 
         // Hash password before saving
@@ -43,15 +45,18 @@ exports.getAllUsers = async (filter, search, sortBy, fields, page, limit) => {
         const skip = Math.max(0, (page - 1) * limit);
 
         let userQuery = User.find(filter);
-
         if (search) {
+            console.log(search);
             const searchRegex = new RegExp(search, 'i');
-            userQuery = userQuery.where({
+            userQuery = userQuery.find({
                 $or: [
-                    { name: { $regex: searchRegex } },
+                    { firstName: { $regex: searchRegex } },
+                    { lastName: { $regex: searchRegex } },
+                    { $expr: { $regexMatch: { input: { $concat: ["$firstName", " ", "$lastName"] }, regex: search, options: 'i' } } }
                 ]
             });
         }
+
 
         if (sortBy) {
             const sortByFields = sortBy.split(',').join(' ');
@@ -144,20 +149,25 @@ exports.updatePassword = async (userId, oldPassword, newPassword, confirmPasswor
 // Delete user
 exports.deleteUser = async (userId) => {
     try {
-        const user = await User.findById(userId);
+        let user = await User.findById(userId);
         if (!user) throw new apiError("User not found", 404);
 
         const userNutritionPlans = await UserNutritionPlan.find({ userId: userId });
         if (userNutritionPlans) {
             await UserNutritionPlan.deleteMany({ userId: userId });
         }
-        
+
         const userWorkouts = await UserWorkout.find({ userId: userId });
         if (userWorkouts) {
             await UserWorkout.deleteMany({ userId: userId });
         }
 
-        await user.remove();
+        const userComments = await Comment.find({ userId: userId });
+        if (userComments) {
+            await Comment.deleteMany({ userId: userId });
+        }
+        user = await User.findByIdAndDelete(userId);
+        if (!user) throw new apiError("User not found", 404);
         return user;
     } catch (error) {
         throw error;

@@ -42,6 +42,7 @@ const foodRouter = require("./routes/foodRouter");
 const exerciseRouter = require("./routes/exerciseRouter");
 const nutritionPlanRouter = require('./routes/nutritionPlanRouter');
 const workoutPlanRouter = require('./routes/workoutPlanRouter');
+const contentRouter = require('./routes/contentRouter');
 
 // Register routes
 app.use("/api/v1/auth", authRouter);
@@ -51,6 +52,7 @@ app.use("/api/v1/exercises", exerciseRouter);
 app.use("/api/v1/foods", foodRouter);
 app.use('/api/v1/nutrition-plans', nutritionPlanRouter);
 app.use('/api/v1/workout-plans', workoutPlanRouter);
+app.use('/api/v1/contents', contentRouter);
 
 // Centralized error handling middleware
 app.use(errorHandler);

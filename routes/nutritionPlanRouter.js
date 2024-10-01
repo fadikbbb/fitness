@@ -3,6 +3,7 @@ const router = express.Router();
 const nutritionPlanController = require('../controllers/nutritionPlanController');
 const authenticate = require('../middlewares/authenticate');
 const authorize = require('../middlewares/authorize');
+const { nutritionPlanValidation } = require('../middlewares/validation');
 const { query } = require('../middlewares/query');
 
 router.use(authenticate);
@@ -11,6 +12,7 @@ router.use(authenticate);
 router.post(
   '/:userId',
   authorize('admin'),
+  nutritionPlanValidation,
   nutritionPlanController.createNutritionPlan
 );
 

@@ -1,14 +1,14 @@
 const mongoose = require("mongoose");
 
 const nutritionPlanSchema = new mongoose.Schema({
-  
+
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
   meals: [{
-    nameMeal: {
+    mealName: {
       type: String,
       required: true,
     },
@@ -20,8 +20,8 @@ const nutritionPlanSchema = new mongoose.Schema({
       },
       quantity: {
         type: Number,
-        required: true,
-        min: 1,
+        required: [true, "Quantity is required"],
+        min: [1, "Quantity must be at least 1"],
       },
     }],
     mealCalories: {

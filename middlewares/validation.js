@@ -426,7 +426,6 @@ const foodValidationMiddleware = [
   body('image')
     .custom((value, { req }) => {
       const imageFile = req.files['image'] ? req.files['image'][0] : null;
-      console.log(imageFile)
       // Check if neither value nor imageFile is provided
       if (!value && !imageFile) {
         throw new Error('An image file must be provided.');
@@ -679,7 +678,116 @@ const foodUpdateValidationMiddleware = [
   }
 ];
 
+const contentValidationRules = [
+  // Hero Title
+  body("heroTitle")
+    .custom(value => {
+      if (value === '') {
+        throw new Error('Hero title is required');
+      }
+      if (parseFloat(value) <= 100 && parseFloat(value) >= 5) {
+        throw new Error('Hero title must be between 5 and 100 characters');
+      }
+      return true;
+    }),
+
+  // Hero Description
+  body("heroDescription")
+    .custom(value => {
+      if (value === '') {
+        throw new Error('Hero description is required');
+      }
+      if (parseFloat(value) <= 500 && parseFloat(value) >= 10) {
+        throw new Error('Hero description must be between 10 and 500 characters');
+      }
+      return true;
+    }),
+
+  // Image
+  body('image')
+    .custom((value, { req }) => {
+      const imageFile = req.files['image'] ? req.files['image'][0] : null;
+      if (!imageFile) {
+        throw new Error('An image file must be provided.');
+      }
+      const allowedTypes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/bmp',
+        'image/webp',
+        'image/tiff',
+        'image/svg+xml'
+      ];
+
+      if (!allowedTypes.includes(imageFile.mimetype)) {
+        throw new Error('Only JPG, JPEG, PNG, GIF, BMP, WEBP, TIFF, and SVG image formats are allowed.');
+      }
+
+      // Check file size (for example, limit to 2MB)
+      const maxSize = 2 * 1024 * 1024;
+      if (imageFile.size > maxSize) {
+        throw new Error('Image size must be less than 2MB.');
+      }
+
+      return true; // Passes validation
+    }),
+
+
+  // Facebook URL (Optional)
+  body("facebook")
+    .optional({ checkFalsy: true })
+    .isURL().withMessage("Facebook link must be a valid URL"),
+
+  // Twitter URL (Optional)
+  body("twitter")
+    .optional({ checkFalsy: true })
+    .isURL().withMessage("Twitter link must be a valid URL"),
+
+  // Instagram URL (Optional)
+  body("instagram")
+    .optional({ checkFalsy: true })
+    .isURL().withMessage("Instagram link must be a valid URL"),
+
+  // LinkedIn URL (Optional)
+  body("linkedin")
+    .optional({ checkFalsy: true })
+    .isURL().withMessage("LinkedIn link must be a valid URL"),
+  // Middleware to check for validation errors
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  }
+];
+
+
+
+const nutritionPlanValidation = [
+  body("mealName")
+    .custom(value => {
+      if (value === '') {
+        throw new Error('mealName is required');
+      }
+      return true;
+    }),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  }
+];
+
+
 module.exports = {
+  contentValidationRules,
+  nutritionPlanValidation,
   userValidationMiddleware,
   registerValidationMiddleware,
   passwordValidationMiddleware,

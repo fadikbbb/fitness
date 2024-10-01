@@ -16,8 +16,6 @@ router.use(authenticate);
 const validateUserId = [
   param("id").isMongoId().withMessage("Invalid user ID format"),
 ];
-
-// User management routes with authorization, validation, and ID check
 router.post("/",
   authorize("admin"), 
   userValidationMiddleware,

@@ -46,11 +46,11 @@ exports.createNutritionPlan = async (userId, meal) => {
 
         // Log if the mealCalories is 0
         if (meal.mealCalories === 0) {
-            console.log(`Meal ${meal.nameMeal} has 0 calories calculated.`);
+            console.log(`Meal ${meal.mealName} has 0 calories calculated.`);
         }
 
         // Check if the meal already exists in the nutrition plan
-        const existingMealIndex = nutritionPlan.meals.findIndex(m => m.nameMeal === meal.nameMeal);
+        const existingMealIndex = nutritionPlan.meals.findIndex(m => m.mealName === meal.mealName);
         if (existingMealIndex > -1) {
             // If the meal exists, update it
             const existingMeal = nutritionPlan.meals[existingMealIndex];
@@ -68,13 +68,11 @@ exports.createNutritionPlan = async (userId, meal) => {
                     });
                 }
             });
-
-            // Recalculate the mealCalories for the updated meal
-            existingMeal.mealCalories += meal.mealCalories; // Add the new meal calories to the existing ones
+            existingMeal.mealCalories += meal.mealCalories;
         } else {
             // Otherwise, create a new meal entry
             nutritionPlan.meals.push({
-                nameMeal: meal.nameMeal,
+                mealName: meal.mealName,
                 foods: meal.foods.map(food => ({
                     foodId: food.foodId,
                     quantity: Number(food.quantity)
@@ -110,7 +108,7 @@ exports.getNutritionPlans = async (filter, search, sortBy, fields, page, limit) 
             const searchRegex = new RegExp(search, 'i');
             nutritionPlanQuery = nutritionPlanQuery.where({
                 $or: [
-                    { 'meals.nameMeal': { $regex: searchRegex } },
+                    { 'meals.mealName': { $regex: searchRegex } },
                 ]
             });
         }
@@ -163,23 +161,21 @@ exports.deleteNutritionPlan = async (planId) => {
         throw error;
     }
 };
-exports.updateMeal = async (userId, planId, mealId, nameMeal) => {
-    console.log(nameMeal);
+exports.updateMeal = async (userId, planId, mealId, mealName) => {
+    console.log(mealName);
     try {
         // Validate user and plan
         const nutritionPlan = await NutritionPlan.findOne({ userId, _id: planId });
         if (!nutritionPlan) {
             throw new apiError('Nutrition plan not found', 404);
         }
-        console.log(nutritionPlan);
         // Find the specific meal
         const meal = nutritionPlan.meals.find(m => m._id.toString() === mealId);
         if (!meal) {
             throw new apiError('Meal not found in the nutrition plan', 404);
         }
-        console.log(meal);
         // Update the meal name
-        meal.nameMeal = nameMeal;
+        meal.mealName = mealName;
         // Save the updated nutrition plan
         await nutritionPlan.save();
         return nutritionPlan;
@@ -277,7 +273,6 @@ exports.removeFoodFromMeal = async (userId, foodId, mealId) => {
 };
 
 exports.updateFoodQuantity = async (userId, mealId, foodId, quantity) => {
-    console.log(userId, mealId, foodId, quantity)
     try {
         const nutritionPlan = await NutritionPlan.findOne({ userId });
         if (!nutritionPlan) {
@@ -288,10 +283,8 @@ exports.updateFoodQuantity = async (userId, mealId, foodId, quantity) => {
             throw new apiError('Meal not found in the nutrition plan', 404);
         }
 
-        const foodIndex = meal.foods.findIndex(f =>
-            f.foodId.toString() === foodId
-        );
-        console.log(foodIndex)
+        const foodIndex = meal.foods.findIndex(f => f.foodId.toString() === foodId);
+
         if (foodIndex === -1) {
             throw new apiError('Food not found in the meal', 404);
         }

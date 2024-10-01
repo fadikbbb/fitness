@@ -2,7 +2,7 @@ const nutritionPlanService = require('../services/nutritionPlanService');
 
 exports.createNutritionPlan = async (req, res, next) => {
     const { userId } = req.params;
-    const meal = req.body; // Expect a single meal object
+    const meal = req.body;
 
     console.log(meal);
     try {
@@ -48,8 +48,6 @@ exports.getNutritionPlanById = async (req, res, next) => {
 
 // Update a nutrition plan
 exports.updateFoodQuantity = async (req, res, next) => {
-    console.log(req.body);
-    console.log(req.params);
     const { userId,mealId,foodId } = req.params;
     const {quantity} = req.body;
     try {
@@ -85,9 +83,10 @@ exports.removeMeal = async (req, res) => {
 //update meal
 exports.updateMeal = async (req, res) => {
     const { userId, planId, mealId } = req.params;
-    const { nameMeal } = req.body;
+    const { mealName } = req.body;
+    console.log(mealName);
     try {
-        const nutritionPlan = await nutritionPlanService.updateMeal(userId, planId, mealId, nameMeal);
+        const nutritionPlan = await nutritionPlanService.updateMeal(userId, planId, mealId, mealName);
         res.status(200).json({ isSuccess: true, message: 'Meal updated successfully', nutritionPlan });
     } catch (error) {
         res.status(500).json({ isSuccess: false, message: 'Failed to update meal', error: error.message });
