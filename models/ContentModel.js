@@ -4,7 +4,7 @@ const contentSchema = new mongoose.Schema({
     heroTitle: { type: String, required: true },
     heroDescription: { type: String, required: true },
     heroImage: { type: String, required: true },
-    logo: { type: String, required: false },
+    logo: { type: String, required: true },
     facebook: { type: String },
     twitter: { type: String },
     instagram: { type: String },

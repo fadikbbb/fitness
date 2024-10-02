@@ -28,7 +28,9 @@ const upload = multer({
     }
 }).fields([
     { name: 'image', maxCount: 1 },
-    { name: 'video', maxCount: 1 }
+    { name: 'video', maxCount: 1 },
+    { name: 'heroImage', maxCount: 1 },
+    { name: 'logo', maxCount: 1 },
 ]);
 
 // Function to upload files to Firebase Storage
@@ -72,14 +74,12 @@ const deleteFile = async (fileUrl) => {
 const updateFile = async (existingFile, fileOriginName, mimeType, buffer, fileType) => {
     try {
         if (!existingFile) {
-            throw new apiError('No existing file to update.', 400);
-        }
-
-        // Delete the existing file
-        const filePath = existingFile.split('/o/')[1].split('?alt=media')[0];
-        const storageRef = ref(storage, decodeURIComponent(filePath));
-        if (storageRef) {
-            await deleteObject(storageRef);
+            // Delete the existing file
+            const filePath = existingFile.split('/o/')[1].split('?alt=media')[0];
+            const storageRef = ref(storage, decodeURIComponent(filePath));
+            if (storageRef) {
+                await deleteObject(storageRef);
+            }
         }
 
         // Upload the new file

@@ -1,34 +1,42 @@
-// services/contentService.js
 const Content = require('../models/ContentModel');
 const apiError = require('../utils/apiError');
 const { updateFile, uploadToStorage } = require('../utils/uploadUtils');
 
-exports.updatePageContent = async (contentData, fileImage) => {
+exports.updatePageContent = async (contentData, fileImage, logoImage) => {
     try {
         let content = await Content.findOne();
-
-        // If content doesn't exist, create a new one
+        console.log("dawd")
         if (!content) {
             content = new Content(contentData);
             if (fileImage) {
                 content.heroImage = await uploadToStorage(fileImage.originalname, fileImage.mimetype, fileImage.buffer, 'img');
             }
+            console.log("dawd")
+            if (logoImage) {
+                content.logo = await uploadToStorage(logoImage.originalname, logoImage.mimetype, logoImage.buffer, 'img');
+            }
+            console.log("dwa")
         } else {
-            // If content exists, update the fields
             if (fileImage) {
                 content.heroImage = await updateFile(content.heroImage, fileImage.originalname, fileImage.mimetype, fileImage.buffer, 'img');
             }
+            console.log()
+            console.log("dwawd")
+            if (logoImage) {
+                content.logo = await updateFile(content.logo, logoImage.originalname, logoImage.mimetype, logoImage.buffer, 'img');
+            }
+            console.log("dwawdwdaw")
             Object.assign(content, contentData);
         }
-
-        // Save the content (this will automatically update `updatedAt`)
+        
+        console.log("dwawdwdawdaw")
         const updatedContent = await content.save();
         return updatedContent;
     } catch (error) {
-        console.error('Error updating page content:', error);
-        throw error;
+       throw error
     }
 };
+
 
 exports.getContent = async () => {
     try {
