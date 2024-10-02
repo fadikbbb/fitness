@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const apiError = require('../utils/apiError');
 
 exports.createWorkoutPlan = async (body, userId) => {
+    
     try {
         // Validate user ID
         if (!userId) {
@@ -26,7 +27,7 @@ exports.createWorkoutPlan = async (body, userId) => {
 
         // Validate exercises data
         await Promise.all(body.exercises.map(async (exercise) => {
-            if (!exercise.exerciseId || !exercise.sets || !exercise.reps) {
+            if (!exercise.exerciseId || !exercise.sets || !exercise.reps || !exercise.restDuration) {
                 throw new apiError('Exercise data not provided', 400);
             }
 
