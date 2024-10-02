@@ -6,6 +6,7 @@ const apiError = require('../utils/apiError');
 
 exports.createNutritionPlan = async (userId, meal) => {
     try {
+
         // Fetch user
         const user = await User.findById(userId);
         if (!user || user.subscriptionStatus !== 'premium') {
@@ -16,7 +17,11 @@ exports.createNutritionPlan = async (userId, meal) => {
         if (!meal || !meal.foods || meal.foods.length === 0) {
             throw new apiError('Meal data not provided or empty', 400);
         }
-
+        meal.foods.forEach((food) => {
+            if (!food.foodId || !food.quantity || food.quantity <= 0) {
+                throw new apiError('required quantity fields not provided or less than or equal to 0', 400);
+            }
+        });
         // Check if nutrition plan already exists for the user
         let nutritionPlan = await NutritionPlan.findOne({ userId });
 
@@ -24,7 +29,7 @@ exports.createNutritionPlan = async (userId, meal) => {
             // Create a new nutrition plan if it doesn't exist
             nutritionPlan = await NutritionPlan.create({ userId, meals: [], totalCalories: 0 });
         }
-
+        console.log(nutritionPlan);
         // Initialize mealCalories to 0 if not set
         meal.mealCalories = meal.mealCalories || 0;
 
@@ -274,6 +279,9 @@ exports.removeFoodFromMeal = async (userId, foodId, mealId) => {
 
 exports.updateFoodQuantity = async (userId, mealId, foodId, quantity) => {
     try {
+        if (!quantity) {
+            throw new apiError('Quantity not provided', 400);
+        }
         const nutritionPlan = await NutritionPlan.findOne({ userId });
         if (!nutritionPlan) {
             throw new apiError('Nutrition plan not found', 404);
