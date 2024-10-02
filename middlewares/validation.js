@@ -733,6 +733,33 @@ const contentValidationRules = [
       }
       return true; // Passes validation
     }),
+
+  body('heroVideo')
+    .custom((value, { req }) => {
+      const videoFile = req.files['heroVideo'] ? req.files['heroVideo'][0] : null;
+
+      if (videoFile) {
+        // Check file type for common video formats
+        const allowedTypes = [
+          'video/mp4',
+          'video/mpeg',
+          'video/x-msvideo',  // MIME type for AVI
+          'video/quicktime',  // MIME type for MOV
+          'video/webm'
+        ];
+
+        if (!allowedTypes.includes(videoFile.mimetype)) {
+          throw new Error(`Invalid format: ${videoFile.mimetype}. Only MP4, MPEG, AVI, MOV, and WEBM video formats are allowed.`);
+        }
+
+        // Check file size (limit to 10MB)
+        const maxSize = 60 * 1024 * 1024; // 60MB
+        if (videoFile.size > maxSize) {
+          throw new Error(`Video size is ${(videoFile.size / (1024 * 1024)).toFixed(2)}MB. Must be less than 10MB.`);
+        }
+      }
+      return true; // Passes validation
+    }),
   // Image
   body('logo')
     .custom((value, { req }) => {

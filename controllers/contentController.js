@@ -4,7 +4,9 @@ exports.updateContent = async (req, res, next) => {
     try {
         const imageFile = req.files['heroImage'] ? req.files['heroImage'][0] : null;
         const logoFile = req.files['logo'] ? req.files['logo'][0] : null;
-        const updatedContent = await contentService.updatePageContent(req.body, imageFile, logoFile);
+        const videoFile = req.files['heroVideo'] ? req.files['heroVideo'][0] : null;
+        console.log(videoFile)
+        const updatedContent = await contentService.updatePageContent(req.body, imageFile, logoFile, videoFile);
         res.status(200).json({
             success: true,
             message: 'Content updated successfully',
