@@ -704,36 +704,92 @@ const contentValidationRules = [
     }),
 
   // Image
-  body('image')
+  body('heroImage')
     .custom((value, { req }) => {
-      const imageFile = req.files['image'] ? req.files['image'][0] : null;
-      if (!imageFile) {
-        throw new Error('An image file must be provided.');
-      }
-      const allowedTypes = [
-        'image/jpeg',
-        'image/jpg',
-        'image/png',
-        'image/gif',
-        'image/bmp',
-        'image/webp',
-        'image/tiff',
-        'image/svg+xml'
-      ];
+      const imageFile = req.files['heroImage'] ? req.files['heroImage'][0] : null;
+      if (imageFile) {
 
-      if (!allowedTypes.includes(imageFile.mimetype)) {
-        throw new Error('Only JPG, JPEG, PNG, GIF, BMP, WEBP, TIFF, and SVG image formats are allowed.');
-      }
+        const allowedTypes = [
+          'image/jpeg',
+          'image/jpg',
+          'image/png',
+          'image/gif',
+          'image/bmp',
+          'image/webp',
+          'image/tiff',
+          'image/svg+xml'
+        ];
 
-      // Check file size (for example, limit to 2MB)
-      const maxSize = 2 * 1024 * 1024;
-      if (imageFile.size > maxSize) {
-        throw new Error('Image size must be less than 2MB.');
-      }
+        if (!allowedTypes.includes(imageFile.mimetype)) {
+          throw new Error('Only JPG, JPEG, PNG, GIF, BMP, WEBP, TIFF, and SVG image formats are allowed.');
+        }
 
+        // Check file size (for example, limit to 2MB)
+        const maxSize = 2 * 1024 * 1024;
+        if (imageFile.size > maxSize) {
+          throw new Error('Image size must be less than 2MB.');
+        }
+
+      }
       return true; // Passes validation
     }),
 
+  body('heroVideo')
+    .custom((value, { req }) => {
+      const videoFile = req.files['heroVideo'] ? req.files['heroVideo'][0] : null;
+
+      if (videoFile) {
+        // Check file type for common video formats
+        const allowedTypes = [
+          'video/mp4',
+          'video/mpeg',
+          'video/x-msvideo',  // MIME type for AVI
+          'video/quicktime',  // MIME type for MOV
+          'video/webm'
+        ];
+
+        if (!allowedTypes.includes(videoFile.mimetype)) {
+          throw new Error(`Invalid format: ${videoFile.mimetype}. Only MP4, MPEG, AVI, MOV, and WEBM video formats are allowed.`);
+        }
+
+        // Check file size (limit to 10MB)
+        const maxSize = 60 * 1024 * 1024; // 60MB
+        if (videoFile.size > maxSize) {
+          throw new Error(`Video size is ${(videoFile.size / (1024 * 1024)).toFixed(2)}MB. Must be less than 10MB.`);
+        }
+      }
+      return true; // Passes validation
+    }),
+  // Image
+  body('logo')
+    .custom((value, { req }) => {
+      const imageFile = req.files['logo'] ? req.files['logo'][0] : null;
+      if (imageFile) {
+
+        const allowedTypes = [
+          'image/jpeg',
+          'image/jpg',
+          'image/png',
+          'image/gif',
+          'image/bmp',
+          'image/webp',
+          'image/tiff',
+          'image/svg+xml'
+        ];
+
+        if (!allowedTypes.includes(imageFile.mimetype)) {
+          throw new Error('Only JPG, JPEG, PNG, GIF, BMP, WEBP, TIFF, and SVG image formats are allowed.');
+        }
+
+        // Check file size (for example, limit to 2MB)
+        const maxSize = 2 * 1024 * 1024;
+        if (imageFile.size > maxSize) {
+          throw new Error('Image size must be less than 2MB.');
+        }
+
+      }
+      return true; // Passes validation
+    }),
 
   // Facebook URL (Optional)
   body("facebook")
