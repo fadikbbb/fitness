@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const apiError = require('../utils/apiError');
 
 exports.createWorkoutPlan = async (body, userId) => {
-    
+
     try {
         // Validate user ID
         if (!userId) {
@@ -257,3 +257,26 @@ exports.deleteWorkoutPlan = async (id) => {
         throw error
     }
 };
+exports.deleteDayOfExercise = async (userId, day) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new apiError('User not found', 404);
+        }
+        
+        const workoutPlan = await WorkoutPlan.findOne({ userId: userId });
+        if (!workoutPlan) {
+            throw new apiError('Workout plan not found', 404);
+        }
+
+        // Filter out the day from the days array
+        workoutPlan.days = workoutPlan.days.filter(d => d.day !== day);
+
+        await workoutPlan.save();
+        return workoutPlan;
+    } catch (error) {
+        throw error;
+    }
+};
+
+

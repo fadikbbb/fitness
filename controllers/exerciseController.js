@@ -9,11 +9,9 @@ exports.createExercise = async (req, res, next) => {
         const exercise = await exerciseService.createExercise(body, imageFile, videoFile);
         res.status(201).send({ isSuccess: true, message: 'Exercise created successfully', exercises: exercise });
     } catch (error) {
-        next(error); // Pass error to the next middleware
+        next(error);
     }
 };
-
-// Get all exercises with filtering, sorting, and pagination
 exports.getAllExercises = async (req, res, next) => {
     try {
         const { exercises, totalExercises } = await exerciseService.getAllExercises(

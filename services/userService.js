@@ -152,6 +152,10 @@ exports.deleteUser = async (userId) => {
         let user = await User.findById(userId);
         if (!user) throw new apiError("User not found", 404);
 
+        if (user.role == "admin") {
+            throw new apiError("You are not authorized to delete Your account", 401);
+        }
+
         const userNutritionPlans = await UserNutritionPlan.find({ userId: userId });
         if (userNutritionPlans) {
             await UserNutritionPlan.deleteMany({ userId: userId });

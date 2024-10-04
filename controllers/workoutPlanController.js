@@ -69,3 +69,13 @@ exports.deleteWorkoutPlan = async (req, res, next) => {
         next(error);
     }
 };
+exports.deleteDayOfExercise = async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+        const { day } = req.query;
+        const updatedWorkoutPlan = await workoutPlanService.deleteDayOfExercise(userId,day);
+        res.status(200).json({ isSuccess: true, message: 'Day of exercise deleted successfully', updatedWorkoutPlan });
+    } catch (error) {
+        next(error);
+    }
+}
