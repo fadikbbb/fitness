@@ -45,7 +45,7 @@ const UserSchema = new mongoose.Schema({
     enum: ["user", "admin"],
     default: "user",
   },
-  profileImage: {
+  image: {
     type: String,
   },
   subscriptionStatus: {

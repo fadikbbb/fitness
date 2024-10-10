@@ -132,7 +132,6 @@ exports.deleteFood = async (id) => {
         if (!food) {
             throw new apiError('Food not found', 404);
         }
-        console.log(food.image);
         // Delete the image from Firebase Storage
         if (food.image && food.image !== '' && food.image !== null && food.image !== "undefined") {
             await deleteFile(food.image);

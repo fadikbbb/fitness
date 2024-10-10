@@ -143,10 +143,33 @@ const userValidationMiddleware = [
   //   .isISO8601()
   //   .withMessage("Date of Birth must be a valid date"),
 
-  // body("profileImage")
-  //   .optional()
-  //   .isURL()
-  //   .withMessage("Profile image must be a valid URL"),
+  body('image')
+  .custom((value, { req }) => {
+    const imageFile = req.files['image'] ? req.files['image'][0] : null;
+    if (imageFile) {
+      const allowedTypes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/bmp',
+        'image/webp',
+      ];
+
+      if (!allowedTypes.includes(imageFile.mimetype)) {
+        throw new Error('Only JPG, JPEG, PNG, GIF, and WEBP image formats are allowed.');
+      }
+
+      // Check file size (for example, limit to 2MB)
+      const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+      if (imageFile.size > maxSize) {
+        throw new Error('Image size must be less than 2MB.');
+      }
+    }
+
+    return true; // Passes validation
+  })
+,
 
 
   // body("passwordChangedAt")
@@ -275,6 +298,36 @@ const exerciseValidatorMiddleware = [
       }
       return true;
     }),
+  body('minReps')
+    .custom(value => {
+      if (value === '') {
+        throw new Error('min reps is required');
+      }
+      if (isNaN(value) || parseFloat(value) <= 0) {
+        throw new Error('Rest duration should be greater than 0');
+      }
+      return true;
+    }),
+  body('maxReps')
+    .custom(value => {
+      if (value === '') {
+        throw new Error('max reps is required');
+      }
+      if (isNaN(value) || parseFloat(value) <= 0) {
+        throw new Error('Rest duration should be greater than 0');
+      }
+      return true;
+    }),
+  body('sets')
+    .custom(value => {
+      if (value === '') {
+        throw new Error('Sets is required');
+      }
+      if (isNaN(value) || parseFloat(value) <= 0) {
+        throw new Error('Rest duration should be greater than 0');
+      }
+      return true;
+    }),
 
   body('intensity')
     .trim()
@@ -387,7 +440,36 @@ const exerciseUpdateValidatorMiddleware = [
       }
       return true;
     }),
-
+    body('minReps')
+    .custom(value => {
+      if (value === '') {
+        throw new Error('min reps is required');
+      }
+      if (isNaN(value) || parseFloat(value) <= 0) {
+        throw new Error('Rest duration should be greater than 0');
+      }
+      return true;
+    }),
+  body('maxReps')
+    .custom(value => {
+      if (value === '') {
+        throw new Error('max reps is required');
+      }
+      if (isNaN(value) || parseFloat(value) <= 0) {
+        throw new Error('Rest duration should be greater than 0');
+      }
+      return true;
+    }),
+  body('sets')
+    .custom(value => {
+      if (value === '') {
+        throw new Error('Sets is required');
+      }
+      if (isNaN(value) || parseFloat(value) <= 0) {
+        throw new Error('Rest duration should be greater than 0');
+      }
+      return true;
+    }),
   body('intensity')
     .trim()
     .custom(value => {

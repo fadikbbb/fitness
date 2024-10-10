@@ -20,7 +20,6 @@ const generateTokens = (userId, role) => {
         );
         return { accessToken, refreshToken };
     } catch (error) {
-        console.log(error);
         throw new apiError("Error generating tokens", 500);
     }
 };

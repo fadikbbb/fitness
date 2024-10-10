@@ -1,17 +1,26 @@
 const mongoose = require('mongoose');
 
 const contentSchema = new mongoose.Schema({
-    heroTitle: { type: String, required: true },
-    heroDescription: { type: String, required: true },
-    heroImage: { type: String, required: true },
-    heroVideo: { type: String, required: true },
-    logo: { type: String, required: true },
-    facebook: { type: String },
-    twitter: { type: String },
-    instagram: { type: String },
-    linkedin: { type: String },
-}, {
-    timestamps: true
-});
+    heroSection: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Hero",
+        required: true,
+    },
+    socialMedia: {
+        type: mongoose.Schema.Types.ObjectId,
+    ref: "SocialMedia",
+    required: true,
+    },
+    aboutSection: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "About",
+        required: true,
+    }],
+    servicesSection: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Service",
+        required: true,
+    }],
+}, { timestamps: true });
 
 module.exports = mongoose.model('Content', contentSchema);

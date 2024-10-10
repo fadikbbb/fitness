@@ -27,7 +27,7 @@ exports.createWorkoutPlan = async (body, userId) => {
 
         // Validate exercises data
         await Promise.all(body.exercises.map(async (exercise) => {
-            if (!exercise.exerciseId || !exercise.sets || !exercise.reps || !exercise.restDuration) {
+            if (!exercise.exerciseId || !exercise.sets || !exercise.minReps || !exercise.maxReps || !exercise.restDuration) {
                 throw new apiError('Exercise data not provided', 400);
             }
 
@@ -115,7 +115,8 @@ exports.updateExercise = async (userId, planId, exerciseId, day, updateData) => 
             throw new apiError('Exercise not found in day', 404);
         }
         exercise.sets = updateData.sets;
-        exercise.reps = updateData.reps;
+        exercise.minReps = updateData.minReps;
+        exercise.maxReps = updateData.maxReps;
         exercise.restDuration = updateData.restDuration;
         exercise.note = updateData.note;
 

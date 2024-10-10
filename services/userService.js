@@ -7,11 +7,11 @@ const { generateVerificationCode, storeVerificationCode, validateVerificationCod
 const UserNutritionPlan = require("../models/NutritionPlanModel");
 const UserWorkout = require("../models/WorkoutPlanModel");
 const Comment = require("../models/CommentModel");
+const { updateFile } = require("../utils/uploadUtils");
 // Create User Service
 exports.createUser = async (userData) => {
     try {
-        console.log(userData);
-        const { email, password, firstName, lastName, gender, weight, height, dateOfBirth, role, profileImage, subscriptionStatus } = userData;
+        const { email, password, firstName, lastName, gender, weight, height, dateOfBirth, role, image, subscriptionStatus } = userData;
 
         // Hash password before saving
         const hashedPassword = await hashPassword(password);
@@ -29,7 +29,7 @@ exports.createUser = async (userData) => {
             height,
             dateOfBirth,
             role,
-            profileImage,
+            image,
             subscriptionStatus,
         });
         await user.save();
@@ -46,7 +46,6 @@ exports.getAllUsers = async (filter, search, sortBy, fields, page, limit) => {
 
         let userQuery = User.find(filter);
         if (search) {
-            console.log(search);
             const searchRegex = new RegExp(search, 'i');
             userQuery = userQuery.find({
                 $or: [
@@ -98,16 +97,25 @@ exports.updateUser = async (userIdOfUpdated, loggedInUser, updates) => {
         if (!Object.keys(updates).length) {
             throw new apiError("No data provided", 400);
         }
-
         const user = await User.findById(userIdOfUpdated);
         if (!user) throw new apiError("User not found", 404);
 
-        if (updates.password) {
-            updates.password = await hashPassword(updates.password);
+        if (updates.image) {
+            updates.image = await updateFile(user.image,
+                updates.image.originalname,
+                updates.image.mimetype,
+                updates.image.buffer,
+                'img');
+        } else {
+            updates.image = user.image;
         }
-        if (loggedInUser._id == userIdOfUpdated && updates.role != "admin" && loggedInUser.role == "admin") {
-            throw new apiError("You are not authorized to update your account from admin to user", 401);
+
+        if (updates.role) {
+            if (loggedInUser._id == userIdOfUpdated && updates.role != "admin" && loggedInUser.role == "admin") {
+                throw new apiError("You are not authorized to update your account from admin to user", 401);
+            }
         }
+
         Object.assign(user, updates);
         user.updatedAt = Date.now();
         await user.save();
@@ -189,7 +197,7 @@ exports.register = async (email, password, firstName, lastName) => {
 
         // Generate a new verification code
         const verificationCode = generateVerificationCode();
-        console.log(`Generated verification code for ${email}: ${verificationCode}`);
+        console.log(verificationCode);
 
         // Store the verification code
         storeVerificationCode(email, verificationCode);
@@ -215,7 +223,6 @@ exports.login = async (email, password) => {
         }
 
         // Compare the provided password
-        console.log(password, user.password);
         const isPasswordValid = await comparePassword(password, user.password);
         if (!isPasswordValid) {
             throw new apiError("Invalid email or password", 400);

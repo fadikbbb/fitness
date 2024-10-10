@@ -29,7 +29,6 @@ exports.createNutritionPlan = async (userId, meal) => {
             // Create a new nutrition plan if it doesn't exist
             nutritionPlan = await NutritionPlan.create({ userId, meals: [], totalCalories: 0 });
         }
-        console.log(nutritionPlan);
         // Initialize mealCalories to 0 if not set
         meal.mealCalories = meal.mealCalories || 0;
 
@@ -41,7 +40,6 @@ exports.createNutritionPlan = async (userId, meal) => {
                     const calories = (Number(fd.calories) * Number(food.quantity)) / Number(fd.weight);
                     return isNaN(calories) ? 0 : calories;  // Handle NaN cases
                 }
-                console.log(`Food with ID ${food.foodId} not found or has invalid data.`);
                 return 0;
             })
         );
@@ -51,7 +49,6 @@ exports.createNutritionPlan = async (userId, meal) => {
 
         // Log if the mealCalories is 0
         if (meal.mealCalories === 0) {
-            console.log(`Meal ${meal.mealName} has 0 calories calculated.`);
         }
 
         // Check if the meal already exists in the nutrition plan
@@ -167,7 +164,6 @@ exports.deleteNutritionPlan = async (planId) => {
     }
 };
 exports.updateMeal = async (userId, planId, mealId, mealName) => {
-    console.log(mealName);
     try {
         // Validate user and plan
         const nutritionPlan = await NutritionPlan.findOne({ userId, _id: planId });
@@ -233,15 +229,9 @@ exports.removeFoodFromMeal = async (userId, foodId, mealId) => {
         if (!meal) {
             throw new apiError('Meal not found in the nutrition plan', 404);
         }
-
-        // Log the current foods in the meal for debugging
-        console.log('Current foods in the meal:', meal.foods);
-
         // Find the food index to delete
         const foodIndex = meal.foods.findIndex(f => f.foodId.toString() === foodId);
         if (foodIndex === -1) {
-            // Log the foodId being searched for
-            console.log(`Food ID searched: ${foodId}`);
             throw new apiError('Food not found in the meal', 404);
         }
 
@@ -250,7 +240,6 @@ exports.removeFoodFromMeal = async (userId, foodId, mealId) => {
 
         // If the meal is empty after removal, remove it from the nutrition plan
         if (meal.foods.length === 0) {
-            console.log(`Meal ${mealId} is empty and will be removed.`);
             const mealIndex = nutritionPlan.meals.findIndex(m => m._id.toString() === mealId);
             if (mealIndex > -1) {
                 nutritionPlan.meals.splice(mealIndex, 1);

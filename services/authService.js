@@ -15,9 +15,9 @@ exports.logout = async (user) => {
 // Refresh Token
 exports.refreshToken = async (refreshToken) => {
     try {
-        if (!refreshToken) {
-            throw new apiError("No refresh token provided", 401);
-        }
+            if (!refreshToken) {
+              throw new apiError("No refresh token provided", 401);  // Error if no refresh token is provided
+            }
 
         const decoded = verifyRefreshToken(refreshToken);
         const userId = decoded.userId;

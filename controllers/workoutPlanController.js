@@ -4,7 +4,6 @@ const workoutPlanService = require('../services/workoutPlanService');
 exports.createWorkoutPlan = async (req, res, next) => {
     const body = req.body;
     const { userId } = req.params;
-    console.log(body);
     try {
         const workoutPlan = await workoutPlanService.createWorkoutPlan(body, userId);
         res.status(201).json({ isSuccess: true, message: 'Workout Plan created successfully', workoutPlan });
@@ -73,6 +72,7 @@ exports.deleteDayOfExercise = async (req, res, next) => {
     try {
         const { userId } = req.params;
         const { day } = req.query;
+       
         const updatedWorkoutPlan = await workoutPlanService.deleteDayOfExercise(userId,day);
         res.status(200).json({ isSuccess: true, message: 'Day of exercise deleted successfully', updatedWorkoutPlan });
     } catch (error) {

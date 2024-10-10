@@ -5,7 +5,6 @@ const query = () => {
             const DEFAULT_LIMIT = 5;
 
             let filter = { ...req.query };
-            console.log(filter)
             const excludeFields = ['search', 'page', 'sort', 'limit', 'fields'];
             excludeFields.forEach((field) => delete filter[field]);
             let queryStr = JSON.stringify(filter).replace(

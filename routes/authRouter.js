@@ -5,9 +5,7 @@ const authenticate = require("../middlewares/authenticate");
 const { registerValidationMiddleware, passwordValidationMiddleware } = require("../middlewares/validation");
 
 // User Registration
-router.post("/register",
-    registerValidationMiddleware,
-    authController.register);
+router.post("/register", registerValidationMiddleware, authController.register);
 
 // User Login
 router.post("/login", authController.login);
@@ -27,7 +25,6 @@ router.post("/reset-password/reset/:token", passwordValidationMiddleware, authCo
 // Refresh Token
 router.post("/refresh-token", authController.refreshToken);
 
-// Update Password
 
 
 module.exports = router;

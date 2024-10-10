@@ -3,8 +3,6 @@ const nutritionPlanService = require('../services/nutritionPlanService');
 exports.createNutritionPlan = async (req, res, next) => {
     const { userId } = req.params;
     const meal = req.body;
-
-    console.log(meal);
     try {
         const nutritionPlan = await nutritionPlanService.createNutritionPlan(userId, meal);
         res.status(201).json({ isSuccess: true, message: 'Nutrition plan created successfully', nutritionPlan });
@@ -48,10 +46,10 @@ exports.getNutritionPlanById = async (req, res, next) => {
 
 // Update a nutrition plan
 exports.updateFoodQuantity = async (req, res, next) => {
-    const { userId,mealId,foodId } = req.params;
-    const {quantity} = req.body;
+    const { userId, mealId, foodId } = req.params;
+    const { quantity } = req.body;
     try {
-        const nutritionPlan = await nutritionPlanService.updateFoodQuantity(userId,mealId,foodId,quantity);
+        const nutritionPlan = await nutritionPlanService.updateFoodQuantity(userId, mealId, foodId, quantity);
         res.status(200).json({ isSuccess: true, message: 'Nutrition plan updated successfully', nutritionPlan });
     } catch (error) {
         next(error);
@@ -70,8 +68,7 @@ exports.deleteNutritionPlan = async (req, res, next) => {
 
 // Remove meal
 exports.removeMeal = async (req, res) => {
-    const { userId, planId,mealId} = req.params;
-
+    const { userId, planId, mealId } = req.params;
     try {
         const nutritionPlan = await nutritionPlanService.removeMeal(userId, planId, mealId);
         res.status(200).json({ isSuccess: true, message: 'Meal deleted successfully', nutritionPlan });
@@ -84,7 +81,6 @@ exports.removeMeal = async (req, res) => {
 exports.updateMeal = async (req, res) => {
     const { userId, planId, mealId } = req.params;
     const { mealName } = req.body;
-    console.log(mealName);
     try {
         const nutritionPlan = await nutritionPlanService.updateMeal(userId, planId, mealId, mealName);
         res.status(200).json({ isSuccess: true, message: 'Meal updated successfully', nutritionPlan });
@@ -96,8 +92,6 @@ exports.updateMeal = async (req, res) => {
 // Remove food
 exports.removeFoodFromMeal = async (req, res) => {
     const { userId, foodId, mealId } = req.params;
-    console.log(userId, foodId, mealId);
-
     try {
         await nutritionPlanService.removeFoodFromMeal(userId, foodId, mealId);
         res.status(200).json({ isSuccess: true, message: 'Food deleted successfully' });

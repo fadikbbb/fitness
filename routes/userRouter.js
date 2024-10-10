@@ -4,7 +4,7 @@ const authenticate = require("../middlewares/authenticate");
 const authorize = require("../middlewares/authorize");
 const { param } = require("express-validator");
 const { query } = require("../middlewares/query");
-
+const { upload } = require("../utils/uploadUtils");
 const { passwordValidationMiddleware, userValidationMiddleware } = require("../middlewares/validation");
 
 const router = express.Router();
@@ -32,14 +32,13 @@ router.get("/:id",
 
 router.patch(
   "/update-password",
-  authenticate,
   passwordValidationMiddleware,
   userController.updatePassword
 );
 router.patch(
   "/:id",
+  upload,
   validateUserId,
-  // userValidationMiddleware,
   userController.updateUser
 );
 router.delete(

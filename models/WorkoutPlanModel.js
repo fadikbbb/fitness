@@ -24,11 +24,19 @@ const workoutPlanSchema = new mongoose.Schema({
                     sets: {
                         type: Number,
                         min: [1, 'Sets must be at least 1'],
+                        max: [20, 'Sets must be less than 20'],
                         required: true,
                     },
-                    reps: {
+                    maxReps: {
                         type: Number,
                         min: [1, 'Reps must be at least 1'],
+                        max: [200, 'Reps must be less than 200'],
+                        required: true,
+                    },
+                    minReps: {
+                        type: Number,
+                        min: [1, 'Reps must be at least 1'],
+                        max: [200, 'Reps must be less than 200'],
                         required: true,
                     },
                     restDuration: {

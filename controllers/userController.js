@@ -4,7 +4,6 @@ const { generateTokens } = require("../utils/tokenUtils");
 // Create User
 exports.createUser = async (req, res, next) => {
   try {
-    console.log(req.body)
     const user = await userService.createUser(req.body);
     res.status(201).json({ isSuccess: true, message: "User created successfully", user });
   } catch (error) {
@@ -40,10 +39,14 @@ exports.getUserById = async (req, res, next) => {
 
 // Update User
 exports.updateUser = async (req, res, next) => {
-  const loggedInUser=req.user;
+  const loggedInUser = req.user;
+  const { id } = req.params;
+  const updates = req.body;
+  if (req.files) {
+    updates.image = req.files['image'] ? req.files['image'][0] : null;
+  }
   try {
-    const user = await userService.updateUser(req.params.id,loggedInUser, req.body);
-console.log(user);
+    const user = await userService.updateUser(id, loggedInUser, updates);
     res.status(200).json({
       isSuccess: true,
       message: "User updated successfully",
@@ -69,17 +72,13 @@ exports.updatePassword = async (req, res, next) => {
   try {
     const { oldPassword, newPassword, confirmPassword } = req.body;
     const user = await userService.updatePassword(req.user._id, oldPassword, newPassword, confirmPassword);
-
     const { accessToken, refreshToken } = generateTokens(user._id);
-
-    // Store refresh token in HttpOnly cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: "Strict",
       maxAge: process.env.REFRESH_TOKEN_MAX_AGE,
     });
-
     res.status(200).json({ isSuccess: true, token: accessToken, message: "Password updated successfully" });
   } catch (error) {
     next(error);

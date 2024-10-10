@@ -42,6 +42,24 @@ const exerciseSchema = new Schema({
         type: Number,
         min: [0, 'Rest duration must be a positive number'],
     },
+    sets: {
+        type: Number,
+        required: [true, 'Sets are required'],
+        min: [1, 'Sets must be at least 1'],
+        max: [20, 'Sets must be less than 20'],
+    },
+    maxReps: {
+        type: Number,
+        required: [true, 'Reps are required'],
+        min: [1, 'Reps must be at least 1'],
+        max: [200, 'Reps must be less than 200'],
+    },
+    minReps: {
+        type: Number,
+        required: [true, 'Reps are required'],
+        min: [1, 'Reps must be at least 1'],
+        max: [200, 'Reps must be less than 200'],
+    },
     intensity: {
         type: String,
         enum: ['low', 'medium', 'high'],
