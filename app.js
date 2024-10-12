@@ -32,6 +32,7 @@ app.use(express.json());
 app.use(xss());
 app.use(hpp());
 app.use(rateLimiter);
+
 // Import route handlers
 const userRouter = require("./routes/userRouter");
 const authRouter = require("./routes/authRouter");
@@ -40,10 +41,7 @@ const foodRouter = require("./routes/foodRouter");
 const exerciseRouter = require("./routes/exerciseRouter");
 const nutritionPlanRouter = require('./routes/nutritionPlanRouter');
 const workoutPlanRouter = require('./routes/workoutPlanRouter');
-const heroRouter = require('./routes/heroRouter');
-const serviceRouter = require('./routes/serviceRouter');
-const aboutRouter = require('./routes/aboutRouter');
-
+const settingRouter = require('./routes/settingRouter');
 
 // Register routes
 app.use("/api/v1/auth", authRouter);
@@ -53,9 +51,8 @@ app.use("/api/v1/exercises", exerciseRouter);
 app.use("/api/v1/foods", foodRouter);
 app.use('/api/v1/nutrition-plans', nutritionPlanRouter);
 app.use('/api/v1/workout-plans', workoutPlanRouter);
-app.use('/api/v1/contents', heroRouter);
-app.use('/api/v1/contents', serviceRouter);
-app.use('/api/v1/contents', aboutRouter);
+app.use('/api/v1/settings', settingRouter);
+
 
 // Centralized error handling middleware
 app.use(errorHandler);

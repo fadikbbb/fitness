@@ -29,9 +29,8 @@ const upload = multer({
 }).fields([
     { name: 'image', maxCount: 1 },
     { name: 'video', maxCount: 1 },
-    { name: 'heroImage', maxCount: 1 },
     { name: 'logo', maxCount: 1 },
-    { name: "heroVideo", maxCount: 1 },
+    { name: "video", maxCount: 1 },
 ]);
 
 // Function to upload files to Firebase Storage
@@ -47,7 +46,6 @@ const uploadToStorage = async (fileOriginName, mimeType, buffer, fileType) => {
         // Get the download URL after successful upload
         const downloadURL = await getDownloadURL(snapshot.ref);
         return downloadURL;
-
     } catch (error) {
         throw new apiError(`Failed to upload file: ${error.message}`, 500);
     }

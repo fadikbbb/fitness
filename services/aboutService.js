@@ -3,20 +3,8 @@ const { updateFile, uploadToStorage } = require('../utils/uploadUtils');
 const About = require('../models/aboutModel');
 
 exports.getAbout = async () => {
-    const about = await About.findOne();
+    const about = await About.find();
     return about;
-}
-
-exports.updateAbout = async (aboutData,id, fileImage) => {
-    try {
-        if (fileImage) {
-            aboutData.image = await updateFile(fileImage.originalname, fileImage.mimetype, fileImage.buffer, 'img');
-        }
-        const updatedContent = await About.findOneAndUpdate({ _id: id }, aboutData, { new: true });
-        return updatedContent;
-    } catch (error) {
-        throw error
-    }
 }
 
 exports.createAbout = async (aboutData, fileImage) => {
@@ -30,6 +18,23 @@ exports.createAbout = async (aboutData, fileImage) => {
         throw error
     }
 }
+
+exports.updateAbout = async (aboutData, id, fileImage) => {
+    try {
+        const about = await About.findById(id);
+        if (!about) {
+            throw new apiError('About not found', 404);
+        }
+        if (fileImage) {
+            aboutData.image = await updateFile(about.image,fileImage.originalname, fileImage.mimetype, fileImage.buffer, 'img');
+        }
+        const updatedContent = await About.findOneAndUpdate({ _id: id }, aboutData, { new: true });
+        return updatedContent;
+    } catch (error) {
+        throw error
+    }
+}
+
 exports.deleteAbout = async (id) => {
     try {
         const deletedAbout = await About.findByIdAndDelete(id);

@@ -7,7 +7,7 @@ const { generateVerificationCode, storeVerificationCode, validateVerificationCod
 const UserNutritionPlan = require("../models/NutritionPlanModel");
 const UserWorkout = require("../models/WorkoutPlanModel");
 const Comment = require("../models/CommentModel");
-const { updateFile } = require("../utils/uploadUtils");
+const { updateFile, uploadToStorage } = require("../utils/uploadUtils");
 // Create User Service
 exports.createUser = async (userData) => {
     try {
@@ -19,6 +19,7 @@ exports.createUser = async (userData) => {
         // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) throw new apiError("User already exists", 400);
+        if(image) image = await  uploadToStorage(null, image.originalname, image.mimetype, image.buffer, 'img');
         const user = new User({
             email,
             password: hashedPassword,

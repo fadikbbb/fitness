@@ -7,7 +7,7 @@ exports.getAbout = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: 'About retrieved successfully',
-            data: about
+            about: about
         });
     } catch (error) {
         next(error);
@@ -31,7 +31,7 @@ exports.updateAbout = async (req, res, next) => {
     try {
         const { id } = req.params;
         const imageFile = req.files['image'] ? req.files['image'][0] : null;
-        const updatedContent = await contentService.updateHero(req.body, id, imageFile);
+        const updatedContent = await aboutService.updateAbout(req.body, id, imageFile);
         res.status(200).json({
             success: true,
             message: 'social media updated successfully',

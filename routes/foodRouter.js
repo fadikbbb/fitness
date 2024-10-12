@@ -4,7 +4,7 @@ const authenticate = require("../middlewares/authenticate");
 const { query } = require("../middlewares/query");
 const authorize = require("../middlewares/authorize");
 const { upload } = require('../utils/uploadUtils');
-const { foodValidationMiddleware, foodUpdateValidationMiddleware } = require("../middlewares/validation");
+const { foodValidationMiddleware, foodUpdateValidationMiddleware } = require("../middlewares/validation/foodValidation");
 const router = express.Router();
 
 // Apply authentication middleware if required

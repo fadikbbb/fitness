@@ -2,7 +2,7 @@
 
 const apiError = require('../utils/apiError');
 const { updateFile, uploadToStorage } = require('../utils/uploadUtils');
-const Service = require('../models/ServiceModel');
+const Service = require('../models/ServiceModels');
 exports.updateService = async (serviceData, id, fileImage) => {
     try {
         let service = await Service.findOne({ _id: id });
@@ -24,7 +24,7 @@ exports.createService = async (serviceData, fileImage) => {
         if (fileImage) {
             serviceData.image = await uploadToStorage(fileImage.originalname, fileImage.mimetype, fileImage.buffer, 'img');
         }
-        const createdService = await serviceData.save();
+        const createdService = await Service.create(serviceData);
         return createdService;
     } catch (error) {
         throw error

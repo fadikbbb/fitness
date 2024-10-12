@@ -14,4 +14,5 @@ router.patch("/:userId/workoutPlan/:id/exercise/:exerciseId", authorize("admin")
 router.delete("/:userId/workoutPlan/:id", authorize("admin"), workoutPlanController.deleteWorkoutPlan);
 router.delete("/:userId/workoutPlan/:id/day", authorize("admin"), workoutPlanController.deleteDayOfExercise);
 router.delete("/:userId/workoutPlan/:id/exercise/:exerciseId", authorize("admin"), workoutPlanController.removeExercise);
+
 module.exports = router;

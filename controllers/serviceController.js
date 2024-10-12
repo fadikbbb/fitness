@@ -31,19 +31,21 @@ exports.updateService = async (req, res, next) => {
 exports.createService = async (req, res, next) => {
     try {
         const imageFile = req.files['image'] ? req.files['image'][0] : null;
+        console.log(imageFile, 'imageFile', req.body, 'req.body');
         const createdService = await service.createService(req.body, imageFile);
         res.status(200).json({
             success: true,
-            message: 'created service successfully',
+            message: 'Service created successfully',
             data: createdService,
         });
     } catch (error) {
         next(error);
     }
-}
+};
 
 exports.deleteService = async (req, res, next) => {
     const { id } = req.params;
+    console.log(id, 'id');
     try {
         const deletedService = await service.deleteService(id);
         res.status(200).json({

@@ -5,8 +5,6 @@ const authorize = require("../middlewares/authorize");
 const { param } = require("express-validator");
 const { query } = require("../middlewares/query");
 const { upload } = require("../utils/uploadUtils");
-const { passwordValidationMiddleware, userValidationMiddleware } = require("../middlewares/validation");
-
 const router = express.Router();
 
 // Apply authentication middleware to all routes
@@ -16,9 +14,11 @@ router.use(authenticate);
 const validateUserId = [
   param("id").isMongoId().withMessage("Invalid user ID format"),
 ];
+
 router.post("/",
+  upload,
   authorize("admin"), 
-  userValidationMiddleware,
+
   userController.createUser);
 router.get("/",
   authorize("admin"),
@@ -32,7 +32,7 @@ router.get("/:id",
 
 router.patch(
   "/update-password",
-  passwordValidationMiddleware,
+
   userController.updatePassword
 );
 router.patch(

@@ -1,11 +1,11 @@
-const Hero = require('../models/HeroModel');
+const Hero = require('../models/HeroModels');
 const apiError = require('../utils/apiError');
 const { updateFile, uploadToStorage } = require('../utils/uploadUtils');
 
-exports.updateHero = async (contentData, fileImage, logoImage, fileVideo) => {
+exports.updateHero = async (heroData, fileImage, logoImage, fileVideo) => {
     try {
-        let content = await Hero.findOne();
-        if (!content) {
+        let hero = await Hero.findOne();
+        if (!hero) {
             if (fileImage) {
                 fileImage = await uploadToStorage(fileImage.originalname, fileImage.mimetype, fileImage.buffer, 'img');
             }
@@ -17,44 +17,43 @@ exports.updateHero = async (contentData, fileImage, logoImage, fileVideo) => {
             if (logoImage) {
                 logoImage = await uploadToStorage(logoImage.originalname, logoImage.mimetype, logoImage.buffer, 'img');
             }
-            content = new Content({
-                    heroTitle: contentData.heroTitle,
-                    heroDescription: contentData.heroDescription,
-                    image: fileImage,
-                    heroVideo: fileVideo,
-                    logo: logoImage
+            hero = new Hero({
+                title: heroData.title,
+                description: heroData.description,
+                image: fileImage,
+                video: fileVideo,
+                logo: logoImage
             });
-            console.log(content);
+
         } else {
+
             if (fileImage) {
-                content.image = await updateFile(content.image, fileImage.originalname, fileImage.mimetype, fileImage.buffer, 'img');
+                hero.image = await updateFile(hero.image, fileImage.originalname, fileImage.mimetype, fileImage.buffer, 'img');
             }
 
             if (fileVideo) {
-                content.heroVideo = await updateFile(content.heroVideo, fileVideo.originalname, fileVideo.mimetype, fileVideo.buffer, 'video');
+                hero.video = await updateFile(hero.video, fileVideo.originalname, fileVideo.mimetype, fileVideo.buffer, 'video');
             }
 
             if (logoImage) {
-                content.logo = await updateFile(content.logo, logoImage.originalname, logoImage.mimetype, logoImage.buffer, 'img');
+                hero.logo = await updateFile(hero.logo, logoImage.originalname, logoImage.mimetype, logoImage.buffer, 'img');
             }
-            Object.assign(content, contentData);
+            Object.assign(hero, heroData);
         }
-
-        const updatedContent = await content.save();
+        console.log(hero)
+        const updatedContent = await hero.save();
         return updatedContent;
     } catch (error) {
         throw error
     }
 };
-
-
-exports.getContent = async () => {
+exports.getHero = async () => {
     try {
-        const content = await Hero.findOne();
-        if (!content) {
+        const hero = await Hero.findOne();
+        if (!hero) {
             throw new apiError('Content not found', 404);
         }
-        return content;
+        return hero;
     } catch (error) {
         throw error;
     }
