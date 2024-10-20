@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 const apiError = require("../utils/apiError");
-
+const cron = require("node-cron");
 // Create transporter
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -85,7 +85,6 @@ const getPasswordResetEmailDesign = (resetUrl) => `
 </html>
 `;
 
-
 // Function to send a password reset email
 const sendPasswordResetEmail = async (email, resetToken) => {
   const resetUrl = `http://localhost:3000/auth/reset-password/reset/${resetToken}`;
@@ -102,7 +101,6 @@ const sendPasswordResetEmail = async (email, resetToken) => {
     throw new apiError("Failed to send password reset email", 500);
   }
 };
-
 
 const getVerificationCodeEmailDesign = (code) => `
 <!DOCTYPE html>
@@ -177,7 +175,6 @@ const getVerificationCodeEmailDesign = (code) => `
 </html>
 `;
 
-
 // Function to send a verification code email
 const sendVerificationCodeEmail = async (email, code) => {
   const mailOptions = {
@@ -193,5 +190,27 @@ const sendVerificationCodeEmail = async (email, code) => {
     throw new apiError("Failed to send verification code", 500);
   }
 };
+
+async function sendWeeklyReportEmail() {
+  try {
+    const premiumUsers = await User.find({ subscriptionStatus: premium });
+
+    for (const user of premiumUsers) {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "Reminder: Submit your Weekly Report",
+        text: `Hello ${user.firstName},\n\nPlease submit your weekly report by the end of the day.`,
+      };
+      await transporter.sendMail(mailOptions);
+    }
+    console.log("Weekly report reminder emails sent successfully");
+  } catch (error) {
+    console.error("Error sending weekly report emails:", error);
+  }
+}
+
+// Schedule task to run every Sunday at 9:00 AM
+cron.schedule("0 9 * * 0", sendWeeklyReportEmail);
 
 module.exports = { sendPasswordResetEmail, sendVerificationCodeEmail };
