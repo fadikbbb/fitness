@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const NutritionPlan = require('../models/NutritionPlanModel');
 const Food = require('../models/FoodModel');
 const User = require('../models/UserModel');
@@ -142,9 +141,6 @@ exports.getNutritionPlans = async (filter, search, sortBy, fields, page, limit) 
 exports.getNutritionPlanByUser = async (userId) => {
     try {
         const nutritionPlan = await NutritionPlan.findOne({ userId }).populate('meals.foods.foodId').populate('userId');
-        if (!nutritionPlan) {
-            throw new apiError('Nutrition plan not found', 404);
-        }
         return nutritionPlan;
     } catch (error) {
         throw error;

@@ -5,6 +5,7 @@ const heroSchema = new mongoose.Schema({
     twitter: { type: String },
     instagram: { type: String },
     linkedin: { type: String },
+    whatsApp: { type: String },
 });
 
 module.exports = mongoose.model('SocialMedia', heroSchema)

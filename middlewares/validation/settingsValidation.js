@@ -1,28 +1,37 @@
 const { body, validationResult } = require("express-validator");
-const settingsHeroValidationMiddleware = [
+
+exports.settingsHeroValidationMiddleware = [
     body("heroTitle")
+        .trim().notEmpty()
+        .withMessage('Hero title is required')
         .custom(value => {
-            if (value === '') {
-                throw new Error('Hero title is required');
-            }
             if (parseFloat(value) <= 100 && parseFloat(value) >= 5) {
                 throw new Error('Hero title must be between 5 and 100 characters');
             }
             return true;
         }),
-    body("heroDescription")
+    body("companyName")
+        .trim().notEmpty()
+        .withMessage('Company Name is required')
         .custom(value => {
-            if (value === '') {
-                throw new Error('Hero description is required');
+            if (parseFloat(value) <= 100 && parseFloat(value) >= 5) {
+                throw new Error('Company Name must be between 5 and 100 characters');
             }
+            return true;
+        }),
+    body("heroDescription")
+        .trim().notEmpty()
+        .withMessage('Hero description is required')
+        .custom(value => {
             if (parseFloat(value) <= 500 && parseFloat(value) >= 10) {
                 throw new Error('Hero description must be between 10 and 500 characters');
             }
             return true;
         }),
-    body('image')
+
+    body('heroImage')
         .custom((value, { req }) => {
-            const imageFile = req.files['image'] ? req.files['image'][0] : null;
+            const imageFile = req.files['heroImage'] ? req.files['heroImage'][0] : null;
             if (imageFile) {
 
                 const allowedTypes = [
@@ -42,14 +51,14 @@ const settingsHeroValidationMiddleware = [
                 if (imageFile.size > maxSize) {
                     throw new Error('Image size must be less than 2MB.');
                 }
-
             }
+
             return true;
         }),
 
-    body('video')
+    body('heroVideo')
         .custom((value, { req }) => {
-            const videoFile = req.files['video'] ? req.files['video'][0] : null;
+            const videoFile = req.files['heroVideo'] ? req.files['heroVideo'][0] : null;
             if (videoFile) {
                 const allowedTypes = [
                     'video/mp4',
@@ -101,7 +110,7 @@ const settingsHeroValidationMiddleware = [
     }
 ];
 
-const settingsSocialMediaValidationMiddleware = [
+exports.settingsSocialMediaValidationMiddleware = [
     body("facebook")
         .optional({ checkFalsy: true })
         .isURL().withMessage("Facebook link must be a valid URL"),
@@ -122,9 +131,4 @@ const settingsSocialMediaValidationMiddleware = [
         next();
     }
 ];
-
-module.exports = {
-    settingsHeroValidationMiddleware,
-    settingsSocialMediaValidationMiddleware
-}
 

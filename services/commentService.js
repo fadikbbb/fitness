@@ -1,14 +1,13 @@
 const Comment = require("../models/CommentModel");
 const apiError = require("../utils/apiError");
 
-exports.createComment = async (body, user) => {
+exports.createComment = async (body, userId) => {
   try {
     if (!body.content) {
       throw new apiError("Content is required", 400);
     }
-    body.userId = user._id;
-    const comment = await Comment.create(body);
-    return comment;
+    body.userId = userId;
+    return await Comment.create(body);
   } catch (error) {
     throw error;
   }
@@ -16,56 +15,53 @@ exports.createComment = async (body, user) => {
 
 exports.getAllCommentsWithUser = async () => {
   try {
-    const comments = await Comment.find().populate("userId");
-    return comments;
+    return await Comment.find().populate("userId", "firstName lastName");
   } catch (error) {
     throw error;
   }
 };
 
-exports.getCommentById = async (id) => {
+exports.getCommentById = async (commentId) => {
   try {
-    const comment = await Comment.findById(id);
-    if (!comment) throw new apiError("Comment not found", 404);
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      throw new apiError("Comment not found", 404);
+    }
     return comment;
   } catch (error) {
     throw error;
   }
 };
 
-exports.deleteComment = async (id, user) => {
+exports.deleteComment = async (commentId, userId, userRole) => {
   try {
-    const comment = await Comment.findById(id);
-    if (!comment) throw new apiError("Comment not found", 404);
-
-    // Authorization check
-    if (comment.userId.toString() !== user._id.toString() && user.role !== "admin") {
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      throw new apiError("Comment not found", 404);
+    }
+    if (userId.toString() !== comment.userId.toString() && userRole !== "admin") {
       throw new apiError("Unauthorized", 401);
     }
-
-    await Comment.findByIdAndDelete(id);
-    return comment;
+    await Comment.findByIdAndDelete(commentId);
+    return "Comment deleted";
   } catch (error) {
     throw error;
   }
 };
 
-exports.updateComment = async (commentId, user, body) => {
+exports.updateComment = async (commentId, body, userId, userRole) => {
   try {
     if (!body.content) {
       throw new apiError("Content is required", 400);
     }
-
     const comment = await Comment.findById(commentId);
-    if (!comment) throw new apiError("Comment not found", 404);
-
-    // Authorization check
-    if (comment.userId.toString() !== user._id.toString() && user.role !== "admin") {
+    if (!comment) {
+      throw new apiError("Comment not found", 404);
+    }
+    if (userId.toString() !== comment.userId.toString() && userRole !== "admin") {
       throw new apiError("Unauthorized", 401);
     }
-
-    const updatedComment = await Comment.findByIdAndUpdate(commentId, body, { new: true });
-    return updatedComment;
+    return await Comment.findByIdAndUpdate(commentId, body, { new: true });
   } catch (error) {
     throw error;
   }

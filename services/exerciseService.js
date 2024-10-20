@@ -149,8 +149,8 @@ exports.deleteExercise = async (id) => {
         );
         // Remove any day that has an empty exercises array
         await WorkoutPlan.updateMany(
-            {}, // No filter needed here because we are just checking for empty days
-            { $pull: { days: { exercises: { $size: 0 } } } } // Remove any day where exercises array is empty
+            {},
+            { $pull: { days: { exercises: { $size: 0 } } } }
         )
 
         // Finally, delete the exercise from the exercises collection

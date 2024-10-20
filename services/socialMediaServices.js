@@ -11,7 +11,8 @@ exports.updateSocialMedia = async (body) => {
                 facebook: body.facebook,
                 twitter: body.twitter,
                 instagram: body.instagram,
-                linkedin: body.linkedin
+                linkedin: body.linkedin,
+                whatsApp: body.whatsApp
             });
         } else {
             // Update the existing document
@@ -19,6 +20,7 @@ exports.updateSocialMedia = async (body) => {
             content.twitter = body.twitter;
             content.instagram = body.instagram;
             content.linkedin = body.linkedin;
+            content.whatsApp = body.whatsApp;   
         }
         console.log(body);
         await content.save();

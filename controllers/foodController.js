@@ -51,7 +51,7 @@ exports.updateFood = async (req, res, next) => {
     try {
         const { id } = req.params;
         const updates = req.body;
-
+console.log(req.body)
         if (req.files) {
             updates.image = req.files['image'] ? req.files['image'][0] : null;; // Make sure req.file is populated correctly
         }

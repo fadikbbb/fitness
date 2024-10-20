@@ -36,7 +36,7 @@ app.use(rateLimiter);
 // Import route handlers
 const userRouter = require("./routes/userRouter");
 const authRouter = require("./routes/authRouter");
-// const commentRouter = require("./routes/commentRouter");
+const commentRouter = require("./routes/commentRouter");
 const foodRouter = require("./routes/foodRouter");
 const exerciseRouter = require("./routes/exerciseRouter");
 const nutritionPlanRouter = require('./routes/nutritionPlanRouter');
@@ -46,7 +46,7 @@ const settingRouter = require('./routes/settingRouter');
 // Register routes
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
-// app.use("/api/v1/comments", commentRouter);
+app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/exercises", exerciseRouter);
 app.use("/api/v1/foods", foodRouter);
 app.use('/api/v1/nutrition-plans', nutritionPlanRouter);

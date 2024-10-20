@@ -31,12 +31,42 @@ const upload = multer({
     { name: 'video', maxCount: 1 },
     { name: 'logo', maxCount: 1 },
     { name: "video", maxCount: 1 },
+    { name: "heroVideo", maxCount: 1 },
+    { name: "heroImage", maxCount: 1 },
 ]);
 
-// Function to upload files to Firebase Storage
+function getFileNameWithTimestamp(fileOriginName) {
+    try {
+        if (!fileOriginName || typeof fileOriginName !== 'string') {
+            throw new Error('Invalid file name. Input must be a non-empty string.');
+        }
+        fileOriginName = fileOriginName.trim();
+        if (fileOriginName === '' || /^[.]+$/.test(fileOriginName)) {
+            throw new Error('File name cannot be empty or just dots.');
+        }
+        const lastDotIndex = fileOriginName.lastIndexOf('.');
+        if (lastDotIndex === -1) {
+            const fileNameWithoutExtension = fileOriginName;
+            const fileName = `${fileNameWithoutExtension}_${Date.now()}`;
+            return fileName;
+        }
+        const fileNameWithoutExtension = fileOriginName.slice(0, lastDotIndex).trim();
+        const fileExtension = fileOriginName.slice(lastDotIndex + 1).trim();
+        if (!fileExtension) {
+            throw new Error('File name must have a valid extension.');
+        }
+        const fileName = `${fileNameWithoutExtension}_${Date.now()}.${fileExtension}`;
+        return fileName;
+    } catch (error) {
+        return null;
+    }
+}
+
 const uploadToStorage = async (fileOriginName, mimeType, buffer, fileType) => {
     try {
-        const fileName = `${fileOriginName}_${Date.now()}`;
+        const fileName = getFileNameWithTimestamp(fileOriginName);
+
+        // Reference to Firebase storage path
         const storageRef = ref(storage, `files/${fileType}/${fileName}`);
         const metadata = { contentType: mimeType };
 
@@ -51,13 +81,16 @@ const uploadToStorage = async (fileOriginName, mimeType, buffer, fileType) => {
     }
 };
 
+
 // Function to delete files from Firebase Storage
 const deleteFile = async (fileUrl) => {
     try {
-        const filePath = fileUrl.split('/o/')[1].split('?alt=media')[0];
-        const storageRef = ref(storage, decodeURIComponent(filePath));
-        await deleteObject(storageRef);
-        return true;
+        if (fileUrl && fileUrl !== null && fileUrl !== undefined && fileUrl !== "") {
+            const filePath = fileUrl.split('/o/')[1].split('?alt=media')[0];
+            const storageRef = ref(storage, decodeURIComponent(filePath));
+            await deleteObject(storageRef);
+            return true;
+        }
     } catch (error) {
         if (error.code === 'storage/object-not-found') {
             return false;
@@ -65,7 +98,6 @@ const deleteFile = async (fileUrl) => {
         throw new apiError(`Failed to delete file: ${error.message}`, 500);
     }
 };
-
 
 
 // Function to update files in Firebase Storage
@@ -79,15 +111,14 @@ const updateFile = async (existingFile, fileOriginName, mimeType, buffer, fileTy
                 await deleteObject(storageRef);
             }
         }
-
-        // Upload the new file
-        const newFileName = `${fileOriginName}_${Date.now()}`;
-        const newStorageRef = ref(storage, `files/${fileType}/${newFileName}`);
+        const fileName = getFileNameWithTimestamp(fileOriginName);
+        // Reference to Firebase storage path
+        const storageRef = ref(storage, `files/${fileType}/${fileName}`);
         const metadata = { contentType: mimeType };
-
-        const snapshot = await uploadBytesResumable(newStorageRef, buffer, metadata);
+        // Upload file to Firebase Storage
+        const snapshot = await uploadBytesResumable(storageRef, buffer, metadata);
+        // Get the download URL after successful upload
         const downloadURL = await getDownloadURL(snapshot.ref);
-
         return downloadURL;
     } catch (error) {
         throw new apiError(`Failed to update file: ${error.message}`, 500);

@@ -1,13 +1,12 @@
 const { Router } = require('express');
-
 const serviceController = require('../controllers/serviceController');
 const socialMediaController = require('../controllers/socialMediaController');
 const AboutController = require('../controllers/aboutController');
 const heroController = require('../controllers/heroController');
-
+const TrainerController = require('../controllers/trainerController');
 const authenticate = require('../middlewares/authenticate');
 const authorize = require('../middlewares/authorize');
-const { settingsHeroValidationMiddleware } = require('../middlewares/validation/settingsValidation');
+const settingsValidation = require('../middlewares/validation/settingsValidation');
 const { upload } = require('../utils/uploadUtils');
 const router = Router();
 
@@ -21,6 +20,7 @@ router.delete('/services/:id', authenticate, authorize('admin'), serviceControll
 router.get('/social-media', socialMediaController.getSocialMedia);
 router.patch('/update-content/social-media',
     authenticate, authorize('admin'),
+    settingsValidation.settingsSocialMediaValidationMiddleware,
     socialMediaController.updateSocialMedia);
 
 // Hero route
@@ -29,7 +29,7 @@ router.patch('/update-content/hero',
     authenticate,
     authorize('admin'),
     upload,
-    settingsHeroValidationMiddleware,
+    settingsValidation.settingsHeroValidationMiddleware,
     heroController.updateHero
 );
 
@@ -39,5 +39,10 @@ router.post('/about', authenticate, authorize('admin'), upload, AboutController.
 router.patch('/update-content/about/:id', authenticate, authorize('admin'), upload, AboutController.updateAbout);
 router.delete('/about/:id', authenticate, authorize('admin'), AboutController.deleteAbout);
 
+// Trainer route
+router.get('/trainer', TrainerController.getTrainer);
+router.post('/trainer', authenticate, authorize('admin'), upload, TrainerController.createTrainer);
+router.patch('/update-content/trainer/:id', authenticate, authorize('admin'), upload, TrainerController.updateTrainer);
+router.delete('/trainer/:id', authenticate, authorize('admin'), TrainerController.deleteTrainer);
 
 module.exports = router;

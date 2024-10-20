@@ -5,21 +5,29 @@ const { sendVerificationCodeEmail } = require("../utils/emailUtils");
 const { generateTokens } = require("../utils/tokenUtils");
 const { generateVerificationCode, storeVerificationCode, validateVerificationCode } = require("../utils/verificationUtils");
 const UserNutritionPlan = require("../models/NutritionPlanModel");
-const UserWorkout = require("../models/WorkoutPlanModel");
+const UserWorkoutPlan = require("../models/WorkoutPlanModel");
 const Comment = require("../models/CommentModel");
-const { updateFile, uploadToStorage } = require("../utils/uploadUtils");
+const { updateFile, uploadToStorage, deleteFile } = require("../utils/uploadUtils");
 // Create User Service
 exports.createUser = async (userData) => {
     try {
-        const { email, password, firstName, lastName, gender, weight, height, dateOfBirth, role, image, subscriptionStatus } = userData;
+        let { email, password, firstName, lastName, gender, weight, height, dateOfBirth, role, image, subscriptionStatus } = userData;
 
         // Hash password before saving
         const hashedPassword = await hashPassword(password);
 
         // Check if user already exists
         const existingUser = await User.findOne({ email });
-        if (existingUser) throw new apiError("User already exists", 400);
-        if(image) image = await  uploadToStorage(null, image.originalname, image.mimetype, image.buffer, 'img');
+
+        if (existingUser) {
+            throw new apiError("User already exists", 400);
+        }
+
+        if (image) {
+            image = await uploadToStorage(image.originalname, image.mimetype, image.buffer, 'img');
+        }
+
+        // Create a new user
         const user = new User({
             email,
             password: hashedPassword,
@@ -33,7 +41,24 @@ exports.createUser = async (userData) => {
             image,
             subscriptionStatus,
         });
+
+        // Save the user to the database
         await user.save();
+
+        // Create an empty nutrition plan
+        const nutritionPlan = new UserNutritionPlan({
+            userId: user._id,
+            meals: [],
+            totalCalories: 0,
+        });
+        await nutritionPlan.save();
+
+        const workoutPlan = new UserWorkoutPlan({
+            userId: user._id,
+            days: [],
+        });
+
+        await workoutPlan.save();
         return user;
     } catch (error) {
         throw error;
@@ -45,18 +70,21 @@ exports.getAllUsers = async (filter, search, sortBy, fields, page, limit) => {
     try {
         const skip = Math.max(0, (page - 1) * limit);
 
+
+
         let userQuery = User.find(filter);
+
         if (search) {
             const searchRegex = new RegExp(search, 'i');
             userQuery = userQuery.find({
                 $or: [
                     { firstName: { $regex: searchRegex } },
                     { lastName: { $regex: searchRegex } },
+                    { email: { $regex: searchRegex } },
                     { $expr: { $regexMatch: { input: { $concat: ["$firstName", " ", "$lastName"] }, regex: search, options: 'i' } } }
                 ]
             });
         }
-
 
         if (sortBy) {
             const sortByFields = sortBy.split(',').join(' ');
@@ -72,7 +100,7 @@ exports.getAllUsers = async (filter, search, sortBy, fields, page, limit) => {
 
         const [users, totalUsers] = await Promise.all([
             userQuery.exec(),
-            User.countDocuments(filter)
+            User.countDocuments(filter) // Count documents based on the updated filter
         ]);
 
         return { totalUsers, users };
@@ -80,6 +108,7 @@ exports.getAllUsers = async (filter, search, sortBy, fields, page, limit) => {
         throw error;
     }
 };
+
 
 // Get user by ID
 exports.getUserById = async (userId) => {
@@ -100,7 +129,6 @@ exports.updateUser = async (userIdOfUpdated, loggedInUser, updates) => {
         }
         const user = await User.findById(userIdOfUpdated);
         if (!user) throw new apiError("User not found", 404);
-
         if (updates.image) {
             updates.image = await updateFile(user.image,
                 updates.image.originalname,
@@ -111,12 +139,12 @@ exports.updateUser = async (userIdOfUpdated, loggedInUser, updates) => {
             updates.image = user.image;
         }
 
-        if (updates.role) {
-            if (loggedInUser._id == userIdOfUpdated && updates.role != "admin" && loggedInUser.role == "admin") {
-                throw new apiError("You are not authorized to update your account from admin to user", 401);
+        if (user.role === "admin") {
+            if (updates.isActive === false) {
+                throw new apiError("You are not authorized to block your account", 401);
             }
         }
-
+        updates.email = user.email
         Object.assign(user, updates);
         user.updatedAt = Date.now();
         await user.save();
@@ -167,18 +195,23 @@ exports.deleteUser = async (userId) => {
 
         const userNutritionPlans = await UserNutritionPlan.find({ userId: userId });
         if (userNutritionPlans) {
-            await UserNutritionPlan.deleteMany({ userId: userId });
+            await UserNutritionPlan.deleteOne({ userId: userId });
         }
 
-        const userWorkouts = await UserWorkout.find({ userId: userId });
+        const userWorkouts = await UserWorkoutPlan.find({ userId: userId });
         if (userWorkouts) {
-            await UserWorkout.deleteMany({ userId: userId });
+            await UserWorkoutPlan.deleteOne({ userId: userId });
         }
 
         const userComments = await Comment.find({ userId: userId });
         if (userComments) {
             await Comment.deleteMany({ userId: userId });
         }
+
+        if (user.image) {
+            await deleteFile(user.image);
+        }
+
         user = await User.findByIdAndDelete(userId);
         if (!user) throw new apiError("User not found", 404);
         return user;
@@ -190,22 +223,14 @@ exports.deleteUser = async (userId) => {
 // Register a new user
 exports.register = async (email, password, firstName, lastName) => {
     try {
-        // Check if email already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             throw new apiError("Email already exists", 400);
         }
-
-        // Generate a new verification code
         const verificationCode = generateVerificationCode();
         console.log(verificationCode);
-
-        // Store the verification code
         storeVerificationCode(email, verificationCode);
-
-        // Send the verification code to the user's email
         await sendVerificationCodeEmail(email, verificationCode);
-
         return { message: "success" };
     } catch (error) {
         throw error;
@@ -216,28 +241,17 @@ exports.register = async (email, password, firstName, lastName) => {
 // Login user and send verification code
 exports.login = async (email, password) => {
     try {
-        // Retrieve the user and verify the password
-
         const user = await User.findOne({ email }).select("+password");
         if (!user) {
             throw new apiError("Invalid email or password", 400);
         }
-
-        // Compare the provided password
         const isPasswordValid = await comparePassword(password, user.password);
         if (!isPasswordValid) {
             throw new apiError("Invalid email or password", 400);
         }
-
-        // Generate a new verification code
         const verificationCode = generateVerificationCode();
-
-        // Store the verification code
         storeVerificationCode(email, verificationCode);
-
-        // Send the verification code to the user's email
         await sendVerificationCodeEmail(email, verificationCode);
-
         return { message: "login success" };
     } catch (error) {
         throw error;
@@ -251,11 +265,9 @@ exports.verifyCode = async (email, password, firstName, lastName, purpose, code)
         if (!email || !password) {
             throw new apiError("Email and password are required", 400);
         }
-
         if (code === undefined) {
             const verificationCode = generateVerificationCode();
             storeVerificationCode(email, verificationCode);
-
             await sendVerificationCodeEmail(email, verificationCode);
             return { message: "Resent verification code" };
         }
@@ -266,36 +278,30 @@ exports.verifyCode = async (email, password, firstName, lastName, purpose, code)
             if (!userValidate) {
                 throw new apiError("Create an account first", 400);
             }
-
             const isPasswordValid = await comparePassword(password, userValidate.password);
             if (!isPasswordValid) {
                 throw new apiError("Invalid email or password", 400);
             }
-
             if (!validateVerificationCode(email, code)) {
                 throw new apiError("Invalid or expired verification code", 400);
             }
-
             const { accessToken, refreshToken } = generateTokens(userValidate._id, userValidate.role);
             userValidate.isActive = true;
             await userValidate.save();
-
             return { message: "login success", accessToken, refreshToken };
+        }
 
-        } else if (purpose === "register") {
 
+        else if (purpose === "register") {
             if (userValidate) {
                 throw new apiError("You have been registered before", 400);
             }
-
             if (!validateVerificationCode(email, code)) {
                 throw new apiError("Invalid or expired verification code", 400);
             }
-
             const hashedPassword = await hashPassword(password);
             const user = new User({ email, password: hashedPassword, firstName, lastName });
             await user.save();
-
             return { message: "success" };
         }
     } catch (error) {

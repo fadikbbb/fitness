@@ -264,7 +264,7 @@ exports.deleteDayOfExercise = async (userId, day) => {
         if (!user) {
             throw new apiError('User not found', 404);
         }
-        
+
         const workoutPlan = await WorkoutPlan.findOne({ userId: userId });
         if (!workoutPlan) {
             throw new apiError('Workout plan not found', 404);

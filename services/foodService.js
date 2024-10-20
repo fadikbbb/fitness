@@ -1,4 +1,5 @@
 const Food = require('../models/FoodModel');
+const NutritionPlan = require("../models/NutritionPlanModel")
 const apiError = require('../utils/apiError');
 const { uploadToStorage, deleteFile, updateFile } = require('../utils/uploadUtils');
 
@@ -90,6 +91,12 @@ exports.updateFood = async (id, updates) => {
         if (!food) {
             throw new apiError('Food not found', 404);
         }
+        if (updates.calories != food.calories || updates.weight != food.weight) {
+            const associatedPlans = await NutritionPlan.find({ 'meals.foods.foodId': id });
+            if (associatedPlans.length > 0) {
+                throw new apiError('weight and calories cannot be update  because it is associated with one or more nutrition plans', 401);
+            }
+        }
         if (updates.image) {
             const existingImage = food.image;
             if (existingImage) {
@@ -113,6 +120,7 @@ exports.updateFood = async (id, updates) => {
         } else {
             updates.image = food.image;
         }
+
         const updatedFood = await Food.findByIdAndUpdate(id, updates, { new: true });
 
         if (!updatedFood) {
@@ -125,20 +133,29 @@ exports.updateFood = async (id, updates) => {
     }
 };
 
+
 exports.deleteFood = async (id) => {
     try {
         const food = await Food.findById(id);
-
         if (!food) {
             throw new apiError('Food not found', 404);
         }
-        // Delete the image from Firebase Storage
-        if (food.image && food.image !== '' && food.image !== null && food.image !== "undefined") {
+
+        // Check if the food is associated with any nutrition plan
+        const associatedPlans = await NutritionPlan.find({ 'meals.foods.foodId': id });
+        if (associatedPlans.length > 0) {
+            throw new apiError('Food cannot be deleted because it is associated with one or more nutrition plans', 401);
+        }
+
+        if (food.image) {
             await deleteFile(food.image);
         }
+
+        // Proceed to delete the food from the Food collection
         const deletedFood = await Food.findByIdAndDelete(id);
         return deletedFood;
     } catch (error) {
         throw error;
     }
 };
+

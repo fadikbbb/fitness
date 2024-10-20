@@ -5,46 +5,20 @@ const authorize = require("../middlewares/authorize");
 const { param } = require("express-validator");
 const { query } = require("../middlewares/query");
 const { upload } = require("../utils/uploadUtils");
+const userValidation = require("../middlewares/validation/userValidation");
 const router = express.Router();
 
-// Apply authentication middleware to all routes
 router.use(authenticate);
 
-// Validation middleware for user ID
 const validateUserId = [
   param("id").isMongoId().withMessage("Invalid user ID format"),
 ];
 
-router.post("/",
-  upload,
-  authorize("admin"), 
-
-  userController.createUser);
-router.get("/",
-  authorize("admin"),
-  query(),
-  userController.getAllUsers);
-
-router.get("/:id",
-  validateUserId,
-  userController.getUserById
-);
-
-router.patch(
-  "/update-password",
-
-  userController.updatePassword
-);
-router.patch(
-  "/:id",
-  upload,
-  validateUserId,
-  userController.updateUser
-);
-router.delete(
-  "/:id",
-  validateUserId,
-  userController.deleteUser
-);
+router.post("/", upload, authorize("admin"), userValidation.userValidationMiddleware, userController.createUser);
+router.get("/", authorize("admin"), query(), userController.getAllUsers);
+router.get("/:id", validateUserId, userController.getUserById);
+router.patch("/update-password", userValidation.updatePasswordValidationMiddleware, userController.updatePassword);
+router.patch("/:id", upload, validateUserId, userController.updateUser);
+router.delete("/:id", validateUserId, userController.deleteUser);
 
 module.exports = router;
