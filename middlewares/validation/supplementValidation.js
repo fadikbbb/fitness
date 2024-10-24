@@ -10,6 +10,7 @@ const supplementValidationMiddleware = [
   body("image").custom((value, { req }) => {
     const imageFile =
       req.files && req.files["image"] ? req.files["image"][0] : null;
+      
     if (!value && !imageFile) {
       throw new Error("An image file must be provided.");
     }
@@ -111,19 +112,8 @@ const updateSupplementValidationMiddleware = [
   },
 ];
 
-const validateSupplementId = [
-  param("id").isMongoId().withMessage("Invalid supplement ID"),
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    next();
-  },
-];
 
 module.exports = {
   supplementValidationMiddleware,
   updateSupplementValidationMiddleware,
-  validateSupplementId,
 };

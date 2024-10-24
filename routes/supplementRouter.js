@@ -7,8 +7,10 @@ const { query } = require("../middlewares/query");
 const {
   supplementValidationMiddleware,
   updateSupplementValidationMiddleware,
-  validateSupplementId,
 } = require("../middlewares/validation/supplementValidation");
+const {
+  validateSupplementId,
+} = require("../middlewares/validation/idValidation");
 
 const router = express.Router();
 
