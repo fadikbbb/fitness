@@ -176,9 +176,7 @@ exports.updateUser = async (userIdOfUpdated, loggedInUser, updates) => {
         throw new apiError("You are not authorized to block your account", 401);
       }
     }
-    if (updates.email !== user.email) {
-      throw new apiError("You are not authorized to change your email", 401);
-    }
+
     Object.assign(user, updates);
     user.updatedAt = Date.now();
     await user.save();
