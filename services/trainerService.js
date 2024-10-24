@@ -1,6 +1,6 @@
 const apiError = require('../utils/apiError');
 const { updateFile, uploadToStorage } = require('../utils/uploadUtils');
-const Trainer = require('../models/trainerModel');
+const Trainer = require('../models/TrainerModel');
 
 exports.getTrainer = async () => {
     const trainer = await Trainer.find();

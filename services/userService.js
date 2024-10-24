@@ -157,8 +157,10 @@ exports.updateUser = async (userIdOfUpdated, loggedInUser, updates) => {
     if (!Object.keys(updates).length) {
       throw new apiError("No data provided", 400);
     }
+
     const user = await User.findById(userIdOfUpdated);
     if (!user) throw new apiError("User not found", 404);
+
     if (updates.image) {
       updates.image = await updateFile(
         user.image,
@@ -176,9 +178,7 @@ exports.updateUser = async (userIdOfUpdated, loggedInUser, updates) => {
         throw new apiError("You are not authorized to block your account", 401);
       }
     }
-    if (updates.email !== user.email) {
-      throw new apiError("You are not authorized to change your email", 401);
-    }
+
     Object.assign(user, updates);
     user.updatedAt = Date.now();
     await user.save();
@@ -195,7 +195,6 @@ exports.updatePassword = async (
   newPassword,
   confirmPassword
 ) => {
-
   try {
     const user = await User.findById(userId).select("+password");
     if (!user) throw new apiError("User not found", 404);

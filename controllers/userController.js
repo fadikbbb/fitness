@@ -47,7 +47,6 @@ exports.updateUser = async (req, res, next) => {
   if (req.files) {
     updates.image = req.files['image'] ? req.files['image'][0] : null;
   }
-  console.log(updates);
   try {
     const user = await userService.updateUser(id, loggedInUser, updates);
     res.status(200).json({
