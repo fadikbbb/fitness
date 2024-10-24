@@ -32,6 +32,18 @@ const foodIdValidate = [
     next();
   },
 ];
+const supplementPlanIdValidate = [
+  param("supplementPlanId")
+    .isMongoId()
+    .withMessage("Invalid supplement plan ID format"),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: errors[0] });
+    }
+    next();
+  },
+];
 
 const exerciseIdValidate = [
   param("foodId").isMongoId().withMessage("Invalid exercise ID format"),
@@ -61,4 +73,5 @@ module.exports = {
   foodIdValidate,
   exerciseIdValidate,
   validateSupplementId,
+  supplementPlanIdValidate,
 };

@@ -3,33 +3,37 @@ const supplementPlanController = require("../controllers/supplementPlanControlle
 const authenticate = require("../middlewares/authenticate");
 const authorize = require("../middlewares/authorize");
 const {
-  supplementPlanValidation,
-} = require("../middlewares/validation/supplementPlanValidation");
+  supplementPlanIdValidate,
+} = require("../middlewares/validation/idValidation");
 
 const router = express.Router();
 
-router.use(authenticate); // Ensures all routes are protected
+router.use(authenticate);
 
 router.post(
   "/",
   authorize("admin"),
-  supplementPlanValidation,
   supplementPlanController.createSupplementPlan
 );
+
 router.get("/", supplementPlanController.getAllSupplementPlans);
 router.get(
   "/:supplementPlanId",
+  supplementPlanIdValidate,
   supplementPlanController.getSupplementPlanById
 );
+
 router.patch(
   "/:supplementPlanId",
   authorize("admin"),
-  supplementPlanValidation,
+  supplementPlanIdValidate,
   supplementPlanController.updateSupplementPlan
 );
+
 router.delete(
   "/:supplementPlanId",
   authorize("admin"),
+  supplementPlanIdValidate,
   supplementPlanController.deleteSupplementPlan
 );
 
