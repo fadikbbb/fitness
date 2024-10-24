@@ -6,7 +6,6 @@ const authValidationMiddleware = require("../middlewares/validation/authValidati
 
 // User Registration
 router.post("/register", authValidationMiddleware.registerValidationMiddleware, authController.register);
-
 // User Login
 router.post("/login", authController.login);
 

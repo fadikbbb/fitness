@@ -5,7 +5,6 @@ const User = require("../models/UserModel");
 // User Logout
 exports.logout = async (user) => {
     try {
-        user.isActive = false;
         await user.save();
     } catch (error) {
         throw new apiError("Error logging out user", 500);
@@ -15,10 +14,9 @@ exports.logout = async (user) => {
 // Refresh Token
 exports.refreshToken = async (refreshToken) => {
     try {
-            if (!refreshToken) {
-              throw new apiError("No refresh token provided", 401);  // Error if no refresh token is provided
-            }
-
+        if (!refreshToken) {
+            throw new apiError("No refresh token provided", 401);
+        }
         const decoded = verifyRefreshToken(refreshToken);
         const userId = decoded.userId;
         const user = await User.findById(userId);

@@ -6,26 +6,32 @@ const weeklyReportSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  week: {
+  eatingLevel: {
     type: String,
     required: true,
   },
-  workoutSummary: {
+  exerciseLevel: {
     type: String,
     required: true,
   },
-  caloriesBurned: {
+  sleepLevel: {
+    type: String,
+    required: true,
+  },
+  weight: {
     type: Number,
     required: true,
   },
-  progressNotes: {
-    type: String,
+  isProblems: {
+    type: Boolean,
     required: true,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  problems: {
+    type: String,
+    required: false,
   },
-});
+ 
+}
+,{timestamps: true});
 
 module.exports = mongoose.model("WeeklyReport", weeklyReportSchema);

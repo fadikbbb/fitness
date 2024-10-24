@@ -43,7 +43,7 @@ const workoutPlanRouter = require("./routes/workoutPlanRouter");
 const settingRouter = require("./routes/settingRouter");
 const weeklyReportsRouter = require("./routes/weeklyReportRouter");
 
-// Register routes
+
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/comments", commentRouter);
@@ -53,12 +53,7 @@ app.use("/api/v1/nutrition-plans", nutritionPlanRouter);
 app.use("/api/v1/workout-plans", workoutPlanRouter);
 app.use("/api/v1/settings", settingRouter);
 app.use("/api/v1/weekly-reports", weeklyReportsRouter);
-app.use("/api/v1/*", (error, req, res, next) => {
-  res.status(404).json({
-    status: "fail",
-    message: "Not found",
-  });
-});
+
 
 app.use(errorHandler);
 

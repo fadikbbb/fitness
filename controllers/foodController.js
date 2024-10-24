@@ -5,9 +5,9 @@ exports.createFood = async (req, res, next) => {
     try {
         const body = { ...req.body };
         const imageFile = req.files['image'] ? req.files['image'][0] : null;
+
         // Call the service to create the food item
         const food = await foodService.createFood(body, imageFile);
-
         res.status(201).json({
             isSuccess: true,
             message: "Food item created successfully",
@@ -17,7 +17,6 @@ exports.createFood = async (req, res, next) => {
         next(error);
     }
 };
-
 // Get all food items
 exports.getAllFoods = async (req, res, next) => {
     try {

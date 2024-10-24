@@ -123,6 +123,20 @@ exports.settingsSocialMediaValidationMiddleware = [
     body("linkedin")
         .optional({ checkFalsy: true })
         .isURL().withMessage("LinkedIn link must be a valid URL"),
+        
+    body('whatsapp')
+    .custom(value => {
+        if (value === '') {
+            throw new Error('Whatsapp is required');
+        }
+        if (isNaN(value)) {
+            throw new Error('Whatsapp must be a number');
+        }
+        if (isNaN(value) || parseFloat(value) < 0) {
+            throw new Error('Whatsapp should be greater than 0');
+        }
+        return true;
+    }),
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

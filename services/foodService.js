@@ -8,6 +8,7 @@ exports.createFood = async (body, file) => {
     try {
         // Check if food already exists by name
         const existingFood = await Food.findOne({ name: body.name });
+        
         if (existingFood) {
             throw new apiError('Food already exists', 400);
         }

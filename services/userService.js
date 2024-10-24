@@ -32,7 +32,7 @@ exports.createUser = async (userData) => {
       image,
       subscriptionStatus,
     } = userData;
-
+    email = email.toLowerCase();
     // Hash password before saving
     const hashedPassword = await hashPassword(password);
 
@@ -176,7 +176,9 @@ exports.updateUser = async (userIdOfUpdated, loggedInUser, updates) => {
         throw new apiError("You are not authorized to block your account", 401);
       }
     }
-    updates.email = user.email;
+    if (updates.email !== user.email) {
+      throw new apiError("You are not authorized to change your email", 401);
+    }
     Object.assign(user, updates);
     user.updatedAt = Date.now();
     await user.save();
@@ -193,6 +195,7 @@ exports.updatePassword = async (
   newPassword,
   confirmPassword
 ) => {
+
   try {
     const user = await User.findById(userId).select("+password");
     if (!user) throw new apiError("User not found", 404);
@@ -257,8 +260,10 @@ exports.deleteUser = async (userId) => {
 };
 
 // Register a new user
-exports.register = async (email, password, firstName, lastName) => {
+exports.register = async (email) => {
   try {
+    email = email.toLowerCase();
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       throw new apiError("Email already exists", 400);
@@ -276,6 +281,7 @@ exports.register = async (email, password, firstName, lastName) => {
 // Login user and send verification code
 exports.login = async (email, password) => {
   try {
+    email = email.toLowerCase();
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
       throw new apiError("Invalid email or password", 400);
@@ -303,6 +309,7 @@ exports.verifyCode = async (
   code
 ) => {
   try {
+    email = email.toLowerCase();
     if (!email || !password) {
       throw new apiError("Email and password are required", 400);
     }

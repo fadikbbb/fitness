@@ -4,14 +4,13 @@ const passwordService = require("../services/passwordService");
 
 exports.register = async (req, res, next) => {
     try {
-        const { email, password, firstName, lastName } = req.body;
-        const result = await userService.register(email, password, firstName, lastName);
+        const { email } = req.body;
+        const result = await userService.register(email);
         res.status(200).json({ isSuccess: true, message: result.message });
     } catch (error) {
         next(error)
     }
 };
-
 exports.login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -33,7 +32,7 @@ exports.verifyCode = async (req, res, next) => {
                 ? Number(process.env.REFRESH_TOKEN_MAX_AGE)
                 : 7 * 24 * 60 * 60 * 1000;
             const expiresDate = refreshTokenMaxAge;
-            
+
             res.cookie("refreshToken", refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
