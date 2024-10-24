@@ -2,28 +2,47 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/authController");
 const authenticate = require("../middlewares/authenticate");
-const authValidationMiddleware = require("../middlewares/validation/authValidation");
+const {
+  registerValidationMiddleware,
+  passwordValidationMiddleware,
+} = require("../middlewares/validation/authValidation");
 
-// User Registration
-router.post("/register", authValidationMiddleware.registerValidationMiddleware, authController.register);
-// User Login
-router.post("/login", authController.login);
+router.post(
+  "/register",
+  registerValidationMiddleware,
+  authController.register
+);
 
-// User Logout
-router.post("/logout", authenticate, authController.logout);
+router.post(
+  "/login",
+  authController.login
+);
 
-// Verify Login and register Code
-router.post("/verify-code", authController.verifyCode);
+router.post(
+  "/logout",
+  authenticate,
+  authController.logout
+);
 
-// Request Password Reset
-router.post("/reset-password/request", authController.requestPasswordReset);
+router.post(
+  "/verify-code",
+  authController.verifyCode
+);
 
-// Reset Password
-router.post("/reset-password/reset/:token", authValidationMiddleware.passwordValidationMiddleware, authController.resetPassword);
+router.post(
+  "/reset-password/request",
+  authController.requestPasswordReset
+);
 
-// Refresh Token
-router.post("/refresh-token", authController.refreshToken);
+router.post(
+  "/reset-password/reset/:token",
+  passwordValidationMiddleware,
+  authController.resetPassword
+);
 
-
+router.post(
+  "/refresh-token",
+  authController.refreshToken
+);
 
 module.exports = router;

@@ -1,6 +1,5 @@
 const aboutService = require('../services/aboutService');
 
-
 exports.getAbout = async (req, res, next) => {
     try {
         const about = await aboutService.getAbout();

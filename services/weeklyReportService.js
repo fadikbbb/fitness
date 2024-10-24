@@ -8,22 +8,21 @@ exports.getAllReports = async (timeFrame) => {
     let startDate, endDate, reports;
     if (timeFrame) {
       switch (timeFrame) {
-        case 'lastWeek':
-          startDate = moment().subtract(1, 'weeks').startOf('week').toDate();
+        case "lastWeek":
+          startDate = moment().subtract(1, "weeks").startOf("week").toDate();
           endDate = moment().toDate();
           break;
-        case 'currentWeek':
-          startDate = moment().startOf('week').toDate();
+        case "currentWeek":
+          startDate = moment().startOf("week").toDate();
           endDate = moment().toDate();
           break;
-        case 'lastMonth':
-          startDate = moment().subtract(1, 'months').startOf('month').toDate();
+        case "lastMonth":
+          startDate = moment().subtract(1, "months").startOf("month").toDate();
           endDate = moment().toDate();
           break;
         default:
           throw new Error("Invalid timeFrame specified");
       }
-      console.log(startDate, endDate)
       reports = await WeeklyReport.find({
         createdAt: {
           $gte: startDate,
@@ -37,7 +36,6 @@ exports.getAllReports = async (timeFrame) => {
         .sort({ createdAt: 1 })
         .populate("userId");
     }
-    console.log(reports)
     return reports;
   } catch (error) {
     throw error;
@@ -45,17 +43,23 @@ exports.getAllReports = async (timeFrame) => {
 };
 
 exports.getUserReports = async (userId) => {
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new apiError("User not found", 404);
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new apiError("User not found", 404);
+    }
+    const reportsUser = await WeeklyReport.find({ userId })
+      .sort({ createdAt: 1 })
+      .populate("userId");
+    if (!reportsUser) {
+      throw new apiError("Reports not found", 404);
+    }
+    return reportsUser;
+  } catch (error) {
+    throw error;
   }
-  const reportsUser = await WeeklyReport.find({ userId }).sort({ createdAt: 1 })
-    .populate("userId");
-  if (!reportsUser) {
-    throw new apiError("Reports not found", 404);
-  }
-  return reportsUser;
 };
+
 exports.createReport = async (userId, data) => {
   try {
     const user = await User.findById(userId);
@@ -69,15 +73,15 @@ exports.createReport = async (userId, data) => {
       }
       throw new apiError("You are not authorized to create reports", 401);
     }
-    // const today = moment().day();
-    // console.log(today);
-    // if (today !== 0) { // 0 corresponds to Sunday
-    //   throw new apiError("Reports can only be submitted on Sundays", 400);
-    // }
 
-    const startOfWeek = moment().startOf('week').toDate();
-    const endOfWeek = moment().endOf('week').toDate();
+    const today = moment().day();
+    console.log(today);
+    if (today !== 0) {
+      throw new apiError("Reports can only be submitted on Sundays", 400);
+    }
 
+    const startOfWeek = moment().startOf("week").toDate();
+    const endOfWeek = moment().endOf("week").toDate();
     const existingReport = await WeeklyReport.findOne({
       userId,
       createdAt: {
@@ -85,15 +89,17 @@ exports.createReport = async (userId, data) => {
         $lte: endOfWeek,
       },
     });
-
     if (existingReport) {
       throw new apiError("You have already submitted a report this week", 400);
     }
-
-    if (!data.eatingLevel || !data.exerciseLevel || !data.sleepLevel || !data.weight) {
+    if (
+      !data.eatingLevel ||
+      !data.exerciseLevel ||
+      !data.sleepLevel ||
+      !data.weight
+    ) {
       throw new apiError("All fields are required", 400);
     }
-
     const report = new WeeklyReport({
       userId,
       eatingLevel: data.eatingLevel,
@@ -103,14 +109,11 @@ exports.createReport = async (userId, data) => {
       isProblems: data.isProblems,
       problems: data.problems,
     });
-
     await User.findByIdAndUpdate(userId, {
       weight: data.weight,
-    })
-
+    });
     return await report.save();
   } catch (error) {
     throw error;
   }
 };
-

@@ -1,12 +1,32 @@
 const { Router } = require("express");
-const commentRouter = Router();
 const commentController = require("../controllers/commentController");
 const authenticate = require("../middlewares/authenticate");
+const authorize = require("../middlewares/authorize");
+const { commentIdValidate } = require("../middlewares/validation/idValidation");
+const { query } = require("../middlewares/query");
 
-commentRouter.post("/", authenticate, commentController.createComment);
-commentRouter.get("/", commentController.getAllCommentsWithUser);
-commentRouter.get("/:commentId", authenticate, commentController.getCommentById);
-commentRouter.delete("/:commentId", authenticate, commentController.deleteComment);
-commentRouter.patch("/:commentId", authenticate, commentController.updateComment);
+const router = Router();
 
-module.exports = commentRouter;
+router.post("/", authenticate, commentController.createComment);
+router.get("/", query(), commentController.getAllCommentsWithUser);
+router.get(
+  "/:commentId",
+  commentIdValidate,
+  authenticate,
+  commentController.getCommentById
+);
+router.delete(
+  "/:commentId",
+  authenticate,
+  commentIdValidate,
+  authorize("admin"),
+  commentController.deleteComment
+);
+router.patch(
+  "/:commentId",
+  authenticate,
+  commentIdValidate,
+  commentController.updateComment
+);
+
+module.exports = router;
